@@ -1,1 +1,1 @@
-{"rewrites":[{"source":"/","destination":"/web/index.html"},{"source":"/css/:path*","destination":"/web/css/:path*"},{"source":"/js/:path*","destination":"/web/js/:path*"}]}
+{"framework":"nextjs","buildCommand":"npm run build","installCommand":"npm install","devCommand":"npm run dev"}
