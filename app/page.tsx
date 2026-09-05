@@ -1,21 +1,30 @@
-const pillars=[
-  ["01","Multi-tenancy","كل مقهى معزول ببياناته وصلاحياته."],
-  ["02","Zero-downtime","نشر مستمر عبر GitHub → Vercel مع أقل توقف ممكن."],
-  ["03","SOC 2 ready","سجلات تدقيق، أسرار خارج الكود، وضوابط أمنية قابلة للتوسع."],
-  ["04","RBAC","Customer / Cafe Staff / Admin بصلاحيات واضحة."],
-  ["05","Disaster Recovery","قاعدة بيانات PostgreSQL قابلة للنسخ الاحتياطي والاسترجاع."],
-  ["06","Security Governance","Headers أمنية، تحقق من المدخلات، وHealth checks."],
-  ["07","Scalable Architecture","Next.js + API + Prisma مصممة للتوسع."],
-  ["08","Observability","Health endpoint وإشارات جاهزة للمراقبة والتنبيه."],
-  ["09","Versioned API","واجهات API منظمة تحت /api/v1."],
-  ["10","Automated QA","بوابة CI للبناء والتحقق قبل الإنتاج."],
+const services=[
+  ["01","Architecture & Design","هندسة نظام قابل للتوسع: Web، Mobile، API، قاعدة البيانات والخدمات."],
+  ["02","Cloud & DevOps","CI/CD، بيئات Preview وProduction، نشر مستمر ومراقبة الإصدارات."],
+  ["03","Security Engineering","RBAC، عزل بيانات المقاهي، validation، security headers وسجلات التدقيق."],
+  ["04","Backend & APIs","APIs منظمة وقابلة للإصدار، business logic، orders وpayments بطريقة آمنة."],
+  ["05","Data Engineering","PostgreSQL + Prisma، تصميم العلاقات، النسخ الاحتياطي واسترجاع البيانات."],
+  ["06","Quality Engineering","Automated QA، type safety، build checks واختبارات قبل Production."],
+  ["07","Observability","Health checks، logs، metrics والتنبيه على مشاكل الأداء والخدمات."],
+  ["08","Multi-tenant SaaS","بنية تسمح بإضافة عدد كبير من المقاهي مع فصل بيانات كل tenant."],
+  ["09","Product Engineering","تحويل الفكرة من MVP إلى منتج SaaS عملي، سريع وسهل الاستعمال."],
+  ["10","Enterprise Readiness","حوكمة، disaster recovery، auditability وخطة توسع نحو العقود الكبيرة."],
 ];
 
+const stack=["Next.js","TypeScript","React","Node.js","PostgreSQL","Prisma","REST API","Vercel","GitHub CI/CD","RBAC"];
+
 export default function Home(){return <main className="shell">
-  <nav className="nav"><div className="brand">☕ قهوتي <span>Qahwati</span></div><div className="nav-links"><a href="#platform">المنصة</a><a href="#pillars">Enterprise</a><a href="/api/health">Health</a></div><div className="status"><i/> Production-ready foundation</div></nav>
-  <section className="hero" id="platform"><div><div className="kicker">Qahwati Platform · v2</div><h1>من MVP إلى<br/><strong>منصة Enterprise.</strong></h1><p>نبني قهوتي كمنصة SaaS حقيقية للمقاهي: عزل البيانات، صلاحيات دقيقة، API قابلة للتوسع، مراقبة، أمان، ونشر مستمر.</p><div className="actions"><a className="btn" href="#pillars">شاهد المعمارية ↓</a><a className="ghost" href="/api/v1/cafes">جرب API</a></div></div><div className="architecture"><div className="arch-title">PLATFORM HEALTH <b>99.9%</b></div><div className="layers"><span>Customer App</span><b>↓</b><span>Next.js Web + Mobile API</span><b>↓</b><span>RBAC · Validation · Audit</span><b>↓</b><span>PostgreSQL + Prisma</span></div><div className="arch-foot"><span>● API Online</span><span>● Database Ready</span></div></div></section>
-  <section className="metrics"><div><b>10</b><span>Technical pillars</span></div><div><b>3</b><span>Access roles</span></div><div><b>6</b><span>Order states</span></div><div><b>∞</b><span>Scalable tenants</span></div></section>
-  <section className="section" id="pillars"><div className="heading"><div><div className="kicker">Enterprise roadmap</div><h2>10 أعمدة تقنية</h2></div><p>الهدف ليس فقط أن يعمل الموقع؛ الهدف أن يكون أساساً يمكنه تحمل النمو والعقود الكبيرة.</p></div><div className="pillar-grid">{pillars.map(([n,t,d])=><article className="pillar" key={n}><div className="num">{n}</div><div><h3>{t}</h3><p>{d}</p></div></article>)}</div></section>
-  <section className="section roadmap"><div className="heading"><div className="kicker">Delivery plan</div><h2>من الآن إلى Production</h2></div><div className="steps"><div><b>01</b><h3>Foundation</h3><p>Auth · RBAC · Multi-tenant · PostgreSQL · Prisma</p></div><div><b>02</b><h3>Operations</h3><p>Café dashboard · Orders · Inventory · Analytics</p></div><div><b>03</b><h3>Enterprise</h3><p>Audit logs · Backups · Observability · Automated QA</p></div></div></section>
-  <footer><div className="brand">☕ قهوتي <span>Qahwati</span></div><p>Built to scale. Ready for tomorrow.</p><small>© 2026 Qahwati Platform</small></footer>
+  <nav className="nav"><div className="brand">☕ قهوتي <span>Qahwati Engineering</span></div><div className="nav-links"><a href="#services">الخدمات</a><a href="#architecture">Architecture</a><a href="#roadmap">Roadmap</a><a href="/api/health">Health</a></div><div className="status"><i/> Engineering Platform</div></nav>
+
+  <section className="hero" id="architecture"><div className="hero-copy"><div className="kicker">SOFTWARE ENGINEERING · QAHWATI</div><h1>من MVP إلى<br/><strong>Software Platform.</strong></h1><p>هنا قهوتي ماشي غير موقع ديال القهوة. هادي منصة هندسة برمجيات كنطوروها بمعمارية احترافية: Frontend، Backend، APIs، Data، Security، Cloud وCI/CD.</p><div className="actions"><a className="btn" href="#services">الخدمات الهندسية ↓</a><a className="ghost" href="#roadmap">شوف الـRoadmap</a></div><div className="stack">{stack.map(x=><span key={x}>{x}</span>)}</div></div><div className="architecture"><div className="arch-title">ENGINEERING ARCHITECTURE <b>v2</b></div><div className="layers"><span>Customer / Café / Admin</span><b>↓</b><span>Next.js Web + Mobile</span><b>↓</b><span>Versioned API · Auth · RBAC</span><b>↓</b><span>Services · Validation · Audit</span><b>↓</b><span>PostgreSQL · Prisma · Backups</span></div><div className="arch-foot"><span>● API Ready</span><span>● Cloud Ready</span><span>● Secure by Design</span></div></div></section>
+
+  <section className="metrics"><div><b>10</b><span>Engineering pillars</span></div><div><b>3</b><span>Core roles</span></div><div><b>6</b><span>Order lifecycle states</span></div><div><b>24/7</b><span>Ready for observability</span></div></section>
+
+  <section className="section" id="services"><div className="heading"><div><div className="kicker">Software engineering services</div><h2>هندسة الخدمة من الداخل</h2></div><p>نفس الفكرة ديال الصورة: 10 technical pillars، ولكن مطبقة على قهوتي وبشكل حقيقي داخل الـsoftware architecture.</p></div><div className="pillar-grid">{services.map(([n,t,d])=><article className="pillar" key={n}><div className="num">{n}</div><div><h3>{t}</h3><p>{d}</p></div></article>)}</div></section>
+
+  <section className="section roadmap" id="roadmap"><div className="heading"><div><div className="kicker">MVP → Enterprise</div><h2>Roadmap هندسة البرمجيات</h2></div><p>كل مرحلة كتزيد قدرة النظام، الأمان، الجودة والاستعداد للتوسع.</p></div><div className="steps"><div><b>01</b><h3>Foundation</h3><p>Architecture · Auth · RBAC · Multi-tenant · PostgreSQL</p></div><div><b>02</b><h3>Scale</h3><p>Café dashboard · Orders · Inventory · Analytics · APIs</p></div><div><b>03</b><h3>Enterprise</h3><p>Audit · Backups · Observability · Automated QA · DR</p></div></div></section>
+
+  <section className="engineering-note"><div><div className="kicker">ENGINEERING PRINCIPLE</div><h2>نبنيو الخدمة باش تكبر، ماشي غير باش تخدم اليوم.</h2><p>كل feature جديدة خاصها تدخل وسط architecture واضحة، permissions صحيحة، data isolation، monitoring وquality gates.</p></div><a className="btn" href="/api/v1/cafes">Test API →</a></section>
+
+  <footer><div className="brand">☕ قهوتي <span>Qahwati Engineering</span></div><p>Built to scale. Engineered for tomorrow.</p><small>© 2026 Qahwati Software Engineering Platform</small></footer>
 </main>}
