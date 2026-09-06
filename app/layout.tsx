@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import "./enterprise.css";
+import "./mvp.css";
 
 export const metadata: Metadata = {
-  title: "قهوتي | Qahwati Enterprise Platform",
-  description: "منصة SaaS لإدارة وطلب خدمات المقاهي — مبنية للتوسع والأمان.",
+  title: "قهوتي | Qahwati",
+  description: "منصة طلب وإدارة خدمات المقاهي — MVP مبني بمعمارية Full-Stack.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
