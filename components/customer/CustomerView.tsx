@@ -1,29 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-
-export interface CafeItem {
-  id: string;
-  name: string;
-  type: string;
-  rating: number;
-  deliveryMinutes: number;
-  isOpen: boolean;
-  ice: string;
-  address: string;
-  image: string;
-}
-
-export interface MenuItem {
-  id: string;
-  name: string;
-  category: string;
-  description: string;
-  priceMad: number;
-  cafeId: string;
-  image: string;
-  calories?: string;
-}
+import { CafeTenant, MenuItem } from "../portal/types";
 
 export interface CreatedOrder {
   id: string;
@@ -32,153 +10,55 @@ export interface CreatedOrder {
   subtotalHt: number;
   vatMad: number;
   totalTtc: number;
-  paymentMethod: string;
+  paymentMethod: "CASH" | "CARD";
   status: "CONFIRMED" | "PREPARING" | "READY" | "DELIVERED";
   createdAt: string;
   cafeIce: string;
   cafeName: string;
 }
 
-const DEMO_CAFES: CafeItem[] = [
-  {
-    id: "cafe_demo",
-    name: "مقهى ومحمصة الأصالة",
-    type: "قهوة مختصة ومخبوزات فاخرة",
-    rating: 4.9,
-    deliveryMinutes: 15,
-    isOpen: true,
-    ice: "001234567000089",
-    address: "شارع المسيرة الخضراء، كازابلانكا",
-    image: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    id: "cafe_2",
-    name: "جلسة كافيه & برانش",
-    type: "حلويات فرنسية وفطور مغربي",
-    rating: 4.8,
-    deliveryMinutes: 20,
-    isOpen: true,
-    ice: "002987654000031",
-    address: "حي النخيل، الرباط",
-    image: "https://images.unsplash.com/photo-1521017432531-fbd92d768814?auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    id: "cafe_3",
-    name: "بُن الصباح Roastery",
-    type: "إسبريسو بار وحبوب محمصة طازجة",
-    rating: 4.7,
-    deliveryMinutes: 18,
-    isOpen: true,
-    ice: "003112233000045",
-    address: "طريق السواني، طنجة",
-    image: "https://images.unsplash.com/photo-1509785307050-d4066910ec1e?auto=format&fit=crop&w=800&q=80",
-  },
-];
-
-const DEMO_PRODUCTS: MenuItem[] = [
-  {
-    id: "p_espresso",
-    name: "إسبريسو سينغل أوريجين",
-    category: "قهوة مختصة",
-    description: "حبوب بن إثيوبية يرقاتشيفي محمصة محلياً بنفحات الزهور والحمضيات اللطيفة",
-    priceMad: 15,
-    cafeId: "cafe_demo",
-    calories: "5 سعرة",
-    image: "https://images.unsplash.com/photo-1510591509098-f4fdc6d0ff04?auto=format&fit=crop&w=600&q=80",
-  },
-  {
-    id: "p_nss",
-    name: "قهوة نص-نص تقليدية",
-    category: "مشروبات بالحليب",
-    description: "القهوة المغربية الأصيلة، توازن مثالي بين الإسبريسو المركّز والحليب الساخن الرغوي",
-    priceMad: 16,
-    cafeId: "cafe_demo",
-    calories: "75 سعرة",
-    image: "https://images.unsplash.com/photo-1577968897966-3d4325b36b61?auto=format&fit=crop&w=600&q=80",
-  },
-  {
-    id: "p_cappuccino",
-    name: "كابتشينو كراميل مخملي",
-    category: "مشروبات بالحليب",
-    description: "إسبريسو مزدوج مع رغوة حليب ميكروية ورسمة باريستا احترافية",
-    priceMad: 24,
-    cafeId: "cafe_demo",
-    calories: "120 سعرة",
-    image: "https://images.unsplash.com/photo-1534778101976-62847782c213?auto=format&fit=crop&w=600&q=80",
-  },
-  {
-    id: "p_croissant",
-    name: "كرواسون زبدة فرنسي طازج",
-    category: "مخبوزات وحلويات",
-    description: "مخبوز يومياً بطبقات هشة ومقرمشة ومحضر بالزبدة الطبيعية 100%",
-    priceMad: 12,
-    cafeId: "cafe_demo",
-    calories: "240 سعرة",
-    image: "https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&w=600&q=80",
-  },
-  {
-    id: "p_v60",
-    name: "قهوة مقطرة V60 Pour-over",
-    category: "قهوة مختصة",
-    description: "تقطير يدوي دقيق يبرز حلاوة القهوة ونقاء الإيحاءات الطبيعية",
-    priceMad: 26,
-    cafeId: "cafe_demo",
-    calories: "2 سعرة",
-    image: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=600&q=80",
-  },
-  {
-    id: "p_iced_latte",
-    name: "آيسد لاتيه بالفانيليا الطبيعية",
-    category: "مشروبات باردة",
-    description: "إسبريسو مثلج مع حليب بارد ولمسة شراب فانيليا طبيعي مدغشقري",
-    priceMad: 28,
-    cafeId: "cafe_demo",
-    calories: "140 سعرة",
-    image: "https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?auto=format&fit=crop&w=600&q=80",
-  },
-];
-
 interface CustomerViewProps {
-  onOrderCreated?: (order: CreatedOrder) => void;
+  cafe: CafeTenant;
+  cafes: CafeTenant[];
+  onSelectCafe: (cafeId: string) => void;
+  onOrderCreated: (cafeId: string, order: CreatedOrder) => void;
 }
 
-export default function CustomerView({ onOrderCreated }: CustomerViewProps) {
-  const [selectedCafeId, setSelectedCafeId] = useState<string>("cafe_demo");
+export default function CustomerView({
+  cafe,
+  cafes,
+  onSelectCafe,
+  onOrderCreated,
+}: CustomerViewProps) {
   const [selectedCategory, setSelectedCategory] = useState<string>("الكل");
-  const [cart, setCart] = useState<Record<string, number>>({
-    p_espresso: 1,
-    p_croissant: 1,
-  });
+  const [cart, setCart] = useState<Record<string, number>>({});
   const [search, setSearch] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState<"CASH" | "CARD" | "APP">("CASH");
+  const [paymentMethod, setPaymentMethod] = useState<"CASH" | "CARD">("CASH");
   const [diningOption, setDiningOption] = useState<"TAKEAWAY" | "DINE_IN" | "DELIVERY">("DINE_IN");
   const [lastOrder, setLastOrder] = useState<CreatedOrder | null>(null);
-  const [invoiceCounter, setInvoiceCounter] = useState(1048);
 
-  const selectedCafe = useMemo(
-    () => DEMO_CAFES.find((c) => c.id === selectedCafeId) || DEMO_CAFES[0],
-    [selectedCafeId]
-  );
-
-  const categories = ["الكل", "قهوة مختصة", "مشروبات بالحليب", "مشروبات باردة", "مخبوزات وحلويات"];
+  const categories = useMemo(() => {
+    const set = new Set<string>(["الكل"]);
+    cafe.products.forEach((p) => set.add(p.category));
+    return Array.from(set);
+  }, [cafe.products]);
 
   const filteredProducts = useMemo(() => {
-    return DEMO_PRODUCTS.filter((p) => {
+    return cafe.products.filter((p) => {
       const matchCat = selectedCategory === "الكل" || p.category === selectedCategory;
       const matchSearch =
         p.name.includes(search.trim()) || p.description.includes(search.trim());
       return matchCat && matchSearch;
     });
-  }, [selectedCategory, search]);
+  }, [cafe.products, selectedCategory, search]);
 
   const totalItems = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
 
   // Moroccan VAT calculation: 10% VAT
   const totalTtc = useMemo(() => {
-    return DEMO_PRODUCTS.reduce((sum, p) => sum + p.priceMad * (cart[p.id] || 0), 0);
-  }, [cart]);
+    return cafe.products.reduce((sum, p) => sum + p.priceMad * (cart[p.id] || 0), 0);
+  }, [cafe.products, cart]);
 
-  // HT = TTC / 1.10
   const subtotalHt = Math.round((totalTtc / 1.1) * 100) / 100;
   const vatMad = Math.round((totalTtc - subtotalHt) * 100) / 100;
 
@@ -201,18 +81,17 @@ export default function CustomerView({ onOrderCreated }: CustomerViewProps) {
   function handleCheckout() {
     if (totalItems === 0) return;
 
-    const newInvoiceNumber = invoiceCounter + 1;
-    setInvoiceCounter(newInvoiceNumber);
+    const nextInvoiceNumber = (cafe.invoices[cafe.invoices.length - 1]?.number || 1000) + 1;
 
-    const itemsSummary = DEMO_PRODUCTS.filter((p) => cart[p.id]).map((p) => ({
+    const itemsSummary = cafe.products.filter((p) => cart[p.id]).map((p) => ({
       name: p.name,
       quantity: cart[p.id],
       price: p.priceMad,
     }));
 
     const orderRecord: CreatedOrder = {
-      id: `CMD-${Date.now().toString().slice(-5)}`,
-      invoiceNumber: newInvoiceNumber,
+      id: `CMD-${cafe.id.slice(5, 8).toUpperCase()}-${Date.now().toString().slice(-4)}`,
+      invoiceNumber: nextInvoiceNumber,
       items: itemsSummary,
       subtotalHt,
       vatMad,
@@ -220,14 +99,12 @@ export default function CustomerView({ onOrderCreated }: CustomerViewProps) {
       paymentMethod,
       status: "CONFIRMED",
       createdAt: new Date().toLocaleTimeString("ar-MA", { hour: "2-digit", minute: "2-digit" }),
-      cafeIce: selectedCafe.ice,
-      cafeName: selectedCafe.name,
+      cafeIce: cafe.ice,
+      cafeName: cafe.name,
     };
 
     setLastOrder(orderRecord);
-    if (onOrderCreated) {
-      onOrderCreated(orderRecord);
-    }
+    onOrderCreated(cafe.id, orderRecord);
     setCart({});
   }
 
@@ -236,30 +113,30 @@ export default function CustomerView({ onOrderCreated }: CustomerViewProps) {
       {/* Banner */}
       <div className="role-banner">
         <div className="role-banner-content">
-          <h2>بوابة الزبون — استكشف، اطلب وتتبع قهوتك</h2>
+          <h2>بوابة الزبون — استكشف واطلب من: {cafe.name}</h2>
           <p>
-            اختر أفضل المقاهي المحمية بالفوترة المغربية القانونية (ICE & TVA 10%). استمتع بقهوتك
-            المفضلة واستلم فاتورتك الإلكترونية المعتمدة فورياً.
+            كل مقهى يتمتع بنظام فوترة مستقل، قائمة طعام فريدة، ورقم تعريف ضريبي وموحد (ICE: {cafe.ice})
+            معتمد لدى إدارة الضرائب المغربية.
           </p>
         </div>
-        <div className="role-banner-badge">☕ تجربة زبون راقية وسلسة</div>
+        <div className="role-banner-badge">📍 {cafe.city}</div>
       </div>
 
       {/* Customer Hero Banner */}
       <div className="customer-hero">
         <div>
           <h2>
-            قهوتك المفضلة، <span>محضرة بإتقان.</span>
+            أهلاً بك في <span>{cafe.name}</span>
           </h2>
           <p>
-            تصفح قائمة المقهى، أضف طلباتك للسلة واستمتع بقهوة طازجة مع فاتورة إلكترونية مطابقة
-            للمعايير الضريبية المغربية في ثوانٍ.
+            تصفح القائمة الحصرية لهذا المقهى، أضف طلباتك للسلة واستلم فاتورتك الإلكترونية المعتمدة
+            فورياً برقم ICE المستقل.
           </p>
           <div className="search-box">
             <span className="search-icon">🔍</span>
             <input
               type="text"
-              placeholder="ابحث عن قهوة، إفطار، حلويات أو مقهى..."
+              placeholder={`ابحث داخل منيو ${cafe.name}...`}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -267,62 +144,64 @@ export default function CustomerView({ onOrderCreated }: CustomerViewProps) {
         </div>
 
         <div className="hero-feature-card">
-          <h4>✨ مميزات الطلب عبر منصة قهوتي</h4>
+          <h4>✨ هوية المقهى المستقلة (Données Café)</h4>
           <div className="hero-steps">
             <div className="hero-step-item">
-              <span className="step-num">1</span>
-              <span>مقاهي معتمدة برقم ICE وسجل تجاري نظامي</span>
+              <span className="step-num">ICE</span>
+              <span>رقم المقاولة الموحد: {cafe.ice}</span>
             </div>
             <div className="hero-step-item">
-              <span className="step-num">2</span>
-              <span>فاتورة إلكترونية قانونية تتضمن الضريبة (10% TVA)</span>
+              <span className="step-num">📍</span>
+              <span>العنوان: {cafe.address}</span>
             </div>
             <div className="hero-step-item">
-              <span className="step-num">3</span>
-              <span>دفع مرن: نقداً بالدرهم، بالبطاقة البنكية أو أونلاين</span>
+              <span className="step-num">📞</span>
+              <span>الهاتف المباشر: {cafe.phone}</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 1. Cafe Selection Section */}
+      {/* 1. Cafe Selector Cards Grid */}
       <div className="q-section-header">
         <div>
-          <h3>🏪 اختر المقهى المفضل</h3>
-          <p>مقاهي مختارة بعناية توفر تجربة متميزة وجودة عالية</p>
+          <h3>🏪 اختر المقهى المستقل الذي تريد الطلب منه</h3>
+          <p>كل مقهى له قائمته الخاصة، أسعاره، وفواتيره المعزولة كلياً</p>
         </div>
         <span style={{ fontSize: "13px", color: "var(--caramel-gold)", fontWeight: 700 }}>
-          3 مقاهي متاحة في منطقتك
+          {cafes.length} مقاهي مستقلة تماماً
         </span>
       </div>
 
       <div className="cafes-grid">
-        {DEMO_CAFES.map((cafe) => {
-          const isSelected = cafe.id === selectedCafeId;
+        {cafes.map((c) => {
+          const isSelected = c.id === cafe.id;
           return (
             <div
-              key={cafe.id}
+              key={c.id}
               className={`cafe-card ${isSelected ? "selected" : ""}`}
-              onClick={() => setSelectedCafeId(cafe.id)}
+              onClick={() => onSelectCafe(c.id)}
             >
               <div
                 className="cafe-card-image"
-                style={{ backgroundImage: `url(${cafe.image})` }}
+                style={{ backgroundImage: `url(${c.image})` }}
               >
-                <span className="cafe-status-badge">● مفتوح للطلب</span>
-                <span className="cafe-ice-badge">ICE: {cafe.ice}</span>
+                <span className="cafe-status-badge">
+                  {isSelected ? "✓ المقهى المختار حالياً" : "● اضغط للاختيار"}
+                </span>
+                <span className="cafe-ice-badge">ICE: {c.ice}</span>
               </div>
               <div className="cafe-card-body">
                 <div>
                   <div className="cafe-card-title">
-                    <h4>{cafe.name}</h4>
-                    <span className="cafe-rating">★ {cafe.rating}</span>
+                    <h4>{c.name}</h4>
+                    <span className="cafe-rating">★ {c.rating}</span>
                   </div>
-                  <div className="cafe-type">{cafe.type}</div>
+                  <div className="cafe-type">{c.type}</div>
                 </div>
                 <div className="cafe-meta">
-                  <span>📍 {cafe.address}</span>
-                  <span>⏱️ {cafe.deliveryMinutes} دقيقة</span>
+                  <span>📍 {c.city}</span>
+                  <span>⏱️ {c.deliveryMinutes} دقيقة</span>
                 </div>
               </div>
             </div>
@@ -330,11 +209,11 @@ export default function CustomerView({ onOrderCreated }: CustomerViewProps) {
         })}
       </div>
 
-      {/* 2. Interactive Products Menu Section */}
+      {/* 2. Menu Section for Currently Selected Cafe */}
       <div className="q-section-header">
         <div>
-          <h3>☕ قائمة مشروبات ومأكولات — {selectedCafe.name}</h3>
-          <p>اختر ما يناسب ذوقك وأضفه مباشرة إلى سلة المشتريات</p>
+          <h3>☕ قائمة مشروبات ومأكولات — {cafe.name}</h3>
+          <p>قائمة المنتجات الخاصة بهذا المقهى حصراً</p>
         </div>
       </div>
 
@@ -412,13 +291,12 @@ export default function CustomerView({ onOrderCreated }: CustomerViewProps) {
       {/* 3. Cart & Checkout Section */}
       <div className="q-section-header" id="cart-section">
         <div>
-          <h3>🛒 السلة وإتمام الطلب القانوني</h3>
-          <p>حساب دقيق للضريبة على القيمة المضافة (10% TVA) وإصدار فوري للفاتورة</p>
+          <h3>🛒 سلة الطلب لدى: {cafe.name}</h3>
+          <p>الفاتورة تصدر برقم ICE الخاص بهذا المقهى: {cafe.ice}</p>
         </div>
       </div>
 
       <div className="cart-layout">
-        {/* Cart items list */}
         <div className="cart-items-panel">
           <h4 style={{ fontSize: "16px", fontWeight: 800, marginBottom: "16px" }}>
             عناصر الطلب ({totalItems} قطع)
@@ -427,16 +305,14 @@ export default function CustomerView({ onOrderCreated }: CustomerViewProps) {
           {totalItems === 0 ? (
             <div style={{ textAlign: "center", padding: "40px", color: "var(--text-muted)" }}>
               <div style={{ fontSize: "40px", marginBottom: "10px" }}>☕</div>
-              <p>السلة فارغة حالياً. اختر منتجاتك من القائمة أعلاه!</p>
+              <p>السلة فارغة. اختر مشروباتك أو وجباتك من القائمة أعلاه!</p>
             </div>
           ) : (
-            DEMO_PRODUCTS.filter((p) => cart[p.id]).map((p) => (
+            cafe.products.filter((p) => cart[p.id]).map((p) => (
               <div key={p.id} className="cart-item-row">
                 <div className="cart-item-info">
                   <h5>{p.name}</h5>
-                  <span>
-                    {p.priceMad} د.م للقطعة · شامل الضريبة
-                  </span>
+                  <span>{p.priceMad} د.م للقطعة · شامل TVA 10%</span>
                 </div>
                 <div className="cart-item-qty">
                   <button className="qty-btn" onClick={() => removeFromCart(p.id)}>
@@ -454,10 +330,9 @@ export default function CustomerView({ onOrderCreated }: CustomerViewProps) {
             ))
           )}
 
-          {/* Dining / Delivery Options */}
           <div style={{ marginTop: "24px", paddingTop: "18px", borderTop: "1px solid #eee" }}>
             <label style={{ fontSize: "13px", fontWeight: 800, color: "var(--primary-espresso)" }}>
-              نوع الطلب:
+              نوع الاستهلاك:
             </label>
             <div style={{ display: "flex", gap: "10px", marginTop: "8px" }}>
               {[
@@ -478,10 +353,10 @@ export default function CustomerView({ onOrderCreated }: CustomerViewProps) {
           </div>
         </div>
 
-        {/* Cart Summary & Legal Invoicing */}
+        {/* Cart Summary */}
         <div className="cart-summary-panel">
           <h4 style={{ fontSize: "16px", fontWeight: 800, marginBottom: "16px" }}>
-            ملخص الفاتورة القانونية
+            الفاتورة القانونية الخاصة بـ {cafe.name}
           </h4>
 
           <div className="summary-row">
@@ -504,7 +379,6 @@ export default function CustomerView({ onOrderCreated }: CustomerViewProps) {
             <b style={{ color: "var(--caramel-gold)" }}>{totalTtc} د.م</b>
           </div>
 
-          {/* Payment Method */}
           <div style={{ marginTop: "20px" }}>
             <label style={{ fontSize: "13px", fontWeight: 800, display: "block", marginBottom: "8px" }}>
               طريقة الأداء:
@@ -534,20 +408,20 @@ export default function CustomerView({ onOrderCreated }: CustomerViewProps) {
             disabled={totalItems === 0}
             onClick={handleCheckout}
           >
-            تأكيد الطلب وإصدار الفاتورة ({totalTtc} د.م)
+            تأكيد الطلب وإصدار فاتورة {cafe.name} ({totalTtc} د.م)
           </button>
         </div>
       </div>
 
-      {/* 4. Instant Receipt / Facture Display */}
+      {/* 4. Instant Receipt */}
       {lastOrder && (
         <div className="receipt-card">
           <div className="receipt-header">
-            <h4>🧾 فاتورة طلب قانونية — {lastOrder.cafeName}</h4>
+            <h4>🧾 فاتورة قانونية صادرة عن — {lastOrder.cafeName}</h4>
             <div className="receipt-legal">
               رقم الفاتورة: <strong>FAC-{new Date().getFullYear()}-{lastOrder.invoiceNumber}</strong> ·
               رقم التعريف الموحد (ICE): <strong>{lastOrder.cafeIce}</strong> · الحالة:{" "}
-              <span className="badge-tag paid">مدفوعة بنجاح</span>
+              <span className="badge-tag paid">مدفوعة ومسجلة في صندوق {cafe.name}</span>
             </div>
           </div>
 
@@ -607,7 +481,7 @@ export default function CustomerView({ onOrderCreated }: CustomerViewProps) {
             <div style={{ textAlign: "center", marginTop: "18px" }}>
               <button
                 className="btn-export"
-                onClick={() => alert(`تم تحميل الفاتورة الإلكترونية الرسمية FAC-${new Date().getFullYear()}-${lastOrder.invoiceNumber}.pdf بنجاح!`)}
+                onClick={() => alert(`تم تحميل فاتورة ${lastOrder.cafeName} الرسمية FAC-${new Date().getFullYear()}-${lastOrder.invoiceNumber}.pdf بنجاح!`)}
               >
                 📥 تحميل الفاتورة الرسمية بصيغة PDF
               </button>
