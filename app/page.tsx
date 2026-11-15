@@ -1,5 +1,5 @@
-import MvpShell from "../components/customer/MvpShell";
+import QahwatiApp from "../components/portal/QahwatiApp";
 
 export default function Home() {
-  return <MvpShell />;
+  return <QahwatiApp />;
 }
