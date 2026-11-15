@@ -6,6 +6,7 @@ import CustomerView, { CreatedOrder } from "../customer/CustomerView";
 import OwnerView from "../owner/OwnerView";
 import AccountantView from "../accountant/AccountantView";
 import GovernmentView from "../government/GovernmentView";
+import ArchitectureView from "../architecture/ArchitectureView";
 import {
   PortalRole,
   CafeTenant,
@@ -227,6 +228,10 @@ export default function QahwatiApp() {
             cafes={cafes}
             onSelectCafe={handleSelectCafe}
           />
+        )}
+
+        {currentRole === "ARCHITECTURE" && (
+          <ArchitectureView cafe={selectedCafe} />
         )}
       </main>
 

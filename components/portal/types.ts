@@ -1,4 +1,4 @@
-export type PortalRole = "CUSTOMER" | "CAFE_OWNER" | "ACCOUNTANT" | "TAX_AUDITOR";
+export type PortalRole = "CUSTOMER" | "CAFE_OWNER" | "ACCOUNTANT" | "TAX_AUDITOR" | "ARCHITECTURE";
 
 export interface MenuItem {
   id: string;

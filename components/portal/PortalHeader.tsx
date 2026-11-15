@@ -53,6 +53,13 @@ export default function PortalHeader({
       icon: "🏛️",
       badge: "المطابقة القانونية",
     },
+    {
+      id: "ARCHITECTURE" as PortalRole,
+      title: "المعمارية والذكاء الاصطناعي",
+      sub: "Enterprise Blueprint & AI",
+      icon: "📐",
+      badge: "المخطط الهيكلي المعتمد",
+    },
   ];
 
   return (
