@@ -1,11 +1,47 @@
-generator client { provider = "prisma-client-js" }
-
-datasource db { provider = "postgresql" url = env("DATABASE_URL") }
-
-enum Role { CUSTOMER CAFE_STAFF ADMIN }
-enum OrderStatus { NEW CONFIRMED PREPARING READY DELIVERED CANCELLED }
-enum PaymentStatus { PENDING PAID FAILED REFUNDED }
-
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+}
+enum Role {
+  CUSTOMER
+  CAFE_OWNER
+  CAFE_STAFF
+  ACCOUNTANT
+  TAX_AUDITOR
+  ADMIN
+}
+enum InvoiceStatus {
+  DRAFT
+  ISSUED
+  PAID
+  CANCELLED
+}
+enum CashSessionStatus {
+  OPEN
+  CLOSED
+}
+enum PaymentMethod {
+  CASH
+  CARD
+  ONLINE
+}
+enum OrderStatus {
+  NEW
+  CONFIRMED
+  PREPARING
+  READY
+  DELIVERED
+  CANCELLED
+}
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
 model User {
   id        String      @id @default(cuid())
   phone     String?     @unique
@@ -16,6 +52,7 @@ model User {
   staff     CafeStaff[]
   reviews   Review[]
   favorites Favorite[]
+  cashSessions CashSession[]
 }
 
 model Cafe {
@@ -27,6 +64,12 @@ model Cafe {
   imageUrl    String?
   rating      Float       @default(0)
   isOpen      Boolean     @default(true)
+  ice         String?     @unique
+  taxId       String?
+  rc          String?
+  vatRate     Float       @default(10)
+  invoices    Invoice[]
+  cashSessions CashSession[]
   createdAt   DateTime    @default(now())
   staff       CafeStaff[]
   categories  Category[]
@@ -82,6 +125,7 @@ model Order {
   cafe            Cafe          @relation(fields: [cafeId], references: [id])
   items           OrderItem[]
   payment         Payment?
+  invoice         Invoice?
 }
 
 model OrderItem {
@@ -100,6 +144,7 @@ model Payment {
   amountMad Int
   status    PaymentStatus @default(PENDING)
   provider  String?
+  method    PaymentMethod @default(CASH)
   reference String?
   createdAt DateTime      @default(now())
   order     Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
@@ -123,4 +168,36 @@ model Favorite {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   cafe   Cafe   @relation(fields: [cafeId], references: [id], onDelete: Cascade)
   @@unique([userId, cafeId])
+}
+
+model Invoice {
+  id         String        @id @default(cuid())
+  number     Int
+  year       Int
+  orderId    String        @unique
+  cafeId     String
+  status     InvoiceStatus @default(ISSUED)
+  subtotalHt Int
+  vatRate    Float
+  vatMad     Int
+  totalTtc   Int
+  cafeIce    String?
+  issuedAt   DateTime      @default(now())
+  order      Order         @relation(fields: [orderId], references: [id])
+  cafe       Cafe          @relation(fields: [cafeId], references: [id])
+  @@unique([cafeId, year, number])
+}
+
+model CashSession {
+  id           String            @id @default(cuid())
+  cafeId       String
+  openedById   String
+  status       CashSessionStatus @default(OPEN)
+  openingMad   Int
+  closingMad   Int?
+  expectedMad  Int?
+  openedAt     DateTime          @default(now())
+  closedAt     DateTime?
+  cafe         Cafe              @relation(fields: [cafeId], references: [id])
+  openedBy     User              @relation(fields: [openedById], references: [id])
 }
