@@ -13,6 +13,16 @@ interface OwnerViewProps {
   onOpenSession: (cafeId: string) => void;
 }
 
+const QR_TABLE_LIST = [
+  "طاولة 1 (نافذة)",
+  "طاولة 2 (وسط)",
+  "طاولة 3 (صالون)",
+  "طاولة 4 (ركن هادئ)",
+  "طاولة 5 (VIP)",
+  "شرفة 1 (تراس)",
+  "شرفة 2 (تراس)",
+];
+
 export default function OwnerView({
   cafe,
   cafes,
@@ -23,6 +33,7 @@ export default function OwnerView({
   onOpenSession,
 }: OwnerViewProps) {
   const [quickPosFeedback, setQuickPosFeedback] = useState("");
+  const [showQrGenerator, setShowQrGenerator] = useState(false);
 
   const expectedCashInDrawer = cafe.cashSession.openingBalance + cafe.cashSession.cashSales;
 
@@ -48,15 +59,15 @@ export default function OwnerView({
         <div className="role-banner-content">
           <h2>بوابة صاحب المقهى — إدارة مستقلة لـ: {cafe.name}</h2>
           <p>
-            تتبع الكاشير الفوري، شاشة الباريستا الخاصة بهذا الفرع فقط، ومراقبة رصيد الصندوق
-            (Fond de Caisse) دون أي تداخل مع الفروع أو المقاهي الأخرى.
+            تتبع الكاشير الفوري، شاشة الباريستا الخاصة بالطلبات المباشرة من هواتف الزبائن على الطاولات،
+            ومراقبة رصيد الصندوق (Fond de Caisse).
           </p>
         </div>
         <div className="role-banner-badge">👤 المسير: {cafe.ownerName}</div>
       </div>
 
       {/* Cafe Quick Switcher Tab */}
-      <div style={{ marginBottom: "20px", display: "flex", alignItems: "center", gap: "10px" }}>
+      <div style={{ marginBottom: "20px", display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
         <span style={{ fontSize: "13px", fontWeight: 800, color: "var(--text-muted)" }}>
           اختر المقهى الذي تديره حالياً:
         </span>
@@ -72,7 +83,77 @@ export default function OwnerView({
             </button>
           ))}
         </div>
+
+        <button
+          type="button"
+          onClick={() => setShowQrGenerator(!showQrGenerator)}
+          className="cat-pill active"
+          style={{ marginRight: "auto", background: "var(--caramel-gold)", border: 0 }}
+        >
+          {showQrGenerator ? "✕ إخفاء مولد أكواد QR" : "🖨️ طباعة وتوليد أكواد QR للطاولات"}
+        </button>
       </div>
+
+      {/* QR Codes Table Generator Section for Cafe Owner */}
+      {showQrGenerator && (
+        <div
+          style={{
+            background: "#fff",
+            border: "2px solid var(--caramel-gold)",
+            borderRadius: "var(--radius-lg)",
+            padding: "24px",
+            marginBottom: "28px",
+            boxShadow: "var(--shadow-md)",
+          }}
+        >
+          <div className="q-section-header" style={{ marginBottom: "16px" }}>
+            <div>
+              <h3>🖨️ ملصقات أكواد QR لطاولات {cafe.name}</h3>
+              <p>اطبع هذه الملصقات وضعها على كل طاولة لتمكين الزبائن من مسحها والطلب مباشرة من هواتفهم</p>
+            </div>
+            <button
+              type="button"
+              className="btn-export"
+              onClick={() => alert(`جاري تجهيز ملف طباعة ملصقات QR لـ ${cafe.name} بدقة عالية PDF...`)}
+            >
+              🖨️ طباعة جميع الملصقات (PDF)
+            </button>
+          </div>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+              gap: "16px",
+            }}
+          >
+            {QR_TABLE_LIST.map((tbl, idx) => (
+              <div key={idx} className="qr-sticker-card">
+                <div style={{ fontWeight: 900, fontSize: "15px", color: "var(--primary-espresso)" }}>
+                  {tbl}
+                </div>
+                <div className="qr-code-box">
+                  <div style={{ textAlign: "center" }}>
+                    <div style={{ fontSize: "36px" }}>📱</div>
+                    <div style={{ fontSize: "11px", fontWeight: 800, color: "var(--primary-espresso)", marginTop: "4px" }}>
+                      Scan & Order
+                    </div>
+                    <div style={{ fontSize: "10px", color: "var(--text-muted)", fontFamily: "monospace" }}>
+                      qahwati.ma/t/{cafe.id.slice(5, 8)}/{idx + 1}
+                    </div>
+                  </div>
+                </div>
+                <div style={{ fontSize: "11px", color: "var(--text-muted)" }}>
+                  {cafe.name} · ICE: {cafe.ice}
+                </div>
+                <span style={{ fontSize: "11px", fontWeight: 800, color: "var(--caramel-gold)" }}>
+                  امسح واطلب من هاتفك
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Metrics Grid */}
       <div className="metrics-grid">
@@ -107,13 +188,13 @@ export default function OwnerView({
 
         <div className="metric-card">
           <div className="metric-title">
-            <span>الطلبات النشطة بالمطبخ</span>
+            <span>الطلبات النشطة (بالمطبخ والطاولات)</span>
             <span>☕</span>
           </div>
           <div className="metric-value">
             {cafe.tickets.filter((t) => t.status !== "COMPLETED").length} طلبات
           </div>
-          <div className="metric-hint">خاصة بهذا المقهى فقط</div>
+          <div className="metric-hint">تشمل طلبات الهواتف المباشرة</div>
         </div>
       </div>
 
@@ -178,7 +259,7 @@ export default function OwnerView({
           <div className="orders-queue-panel">
             <div className="q-section-header">
               <div>
-                <h3>🔔 طلبات باريستا {cafe.name}</h3>
+                <h3>🔔 طلبات باريستا {cafe.name} (الكاونتر + الهواتف)</h3>
                 <p>طلبات هذا المقهى المعزولة عن أي مقهى آخر</p>
               </div>
               <span className="badge-tag paid">
@@ -209,9 +290,42 @@ export default function OwnerView({
                       <div>
                         <span className="ticket-id">{ticket.id}</span> —{" "}
                         <strong style={{ fontSize: "14px" }}>{ticket.tableOrClient}</strong>
+                        {ticket.isPhoneOrder && (
+                          <span
+                            style={{
+                              background: "#fef3c7",
+                              color: "#92400e",
+                              padding: "2px 8px",
+                              borderRadius: "6px",
+                              fontSize: "11px",
+                              fontWeight: 800,
+                              marginRight: "8px",
+                            }}
+                          >
+                            📱 طلب هاتف مباشر
+                          </span>
+                        )}
                       </div>
                       <span className="ticket-time">⏱️ {ticket.time}</span>
                     </div>
+
+                    {/* Barista Customer Note */}
+                    {ticket.notes && (
+                      <div
+                        style={{
+                          background: "#fff9f2",
+                          border: "1px dashed var(--caramel-gold)",
+                          padding: "6px 12px",
+                          borderRadius: "6px",
+                          fontSize: "12px",
+                          color: "#78350f",
+                          margin: "6px 0 10px",
+                          fontWeight: 700,
+                        }}
+                      >
+                        📝 ملاحظة الزبون: "{ticket.notes}"
+                      </div>
+                    )}
 
                     <div className="ticket-items">
                       {ticket.items.map((it, idx) => (
@@ -261,7 +375,7 @@ export default function OwnerView({
                             className="btn-ticket-action close"
                             onClick={() => onUpdateTicket(cafe.id, ticket.id, "COMPLETED")}
                           >
-                            تم التسليم ✓
+                            تم التسليم لطاولة الزبون ✓
                           </button>
                         )}
                         {ticket.status === "COMPLETED" && (

@@ -15,6 +15,9 @@ export interface CreatedOrder {
   createdAt: string;
   cafeIce: string;
   cafeName: string;
+  tableNumber?: string;
+  customerNote?: string;
+  orderSource?: "PHONE_TABLE_QR" | "WEB" | "COUNTER";
 }
 
 interface CustomerViewProps {
@@ -23,6 +26,17 @@ interface CustomerViewProps {
   onSelectCafe: (cafeId: string) => void;
   onOrderCreated: (cafeId: string, order: CreatedOrder) => void;
 }
+
+const AVAILABLE_TABLES = [
+  "طاولة 1 (نافذة)",
+  "طاولة 2 (وسط)",
+  "طاولة 3 (صالون)",
+  "طاولة 4 (ركن هادئ)",
+  "طاولة 5 (VIP)",
+  "شرفة 1 (إطلالة خارجية)",
+  "شرفة 2 (تراس)",
+  "شرفة 3 (تراس)",
+];
 
 export default function CustomerView({
   cafe,
@@ -35,7 +49,12 @@ export default function CustomerView({
   const [search, setSearch] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<"CASH" | "CARD">("CASH");
   const [diningOption, setDiningOption] = useState<"TAKEAWAY" | "DINE_IN" | "DELIVERY">("DINE_IN");
+  const [selectedTable, setSelectedTable] = useState<string>("طاولة 4 (ركن هادئ)");
+  const [customerNote, setCustomerNote] = useState<string>("");
+  const [isPhoneFrame, setIsPhoneFrame] = useState<boolean>(false);
   const [lastOrder, setLastOrder] = useState<CreatedOrder | null>(null);
+  const [waiterCalledMsg, setWaiterCalledMsg] = useState<string>("");
+  const [qrScannedFeedback, setQrScannedFeedback] = useState<string>("");
 
   const categories = useMemo(() => {
     const set = new Set<string>(["الكل"]);
@@ -78,6 +97,18 @@ export default function CustomerView({
     });
   }
 
+  function handleScanQr(table: string) {
+    setSelectedTable(table);
+    setDiningOption("DINE_IN");
+    setQrScannedFeedback(`📸 تم مسح كود QR بنجاح! أنت جالس في: ${table}`);
+    setTimeout(() => setQrScannedFeedback(""), 4000);
+  }
+
+  function handleCallWaiter() {
+    setWaiterCalledMsg(`🔔 تم إشعار النادل! السرباي في طريقه الآن إلى ${selectedTable}`);
+    setTimeout(() => setWaiterCalledMsg(""), 5000);
+  }
+
   function handleCheckout() {
     if (totalItems === 0) return;
 
@@ -101,6 +132,9 @@ export default function CustomerView({
       createdAt: new Date().toLocaleTimeString("ar-MA", { hour: "2-digit", minute: "2-digit" }),
       cafeIce: cafe.ice,
       cafeName: cafe.name,
+      tableNumber: diningOption === "DINE_IN" ? selectedTable : undefined,
+      customerNote: customerNote.trim() || undefined,
+      orderSource: "PHONE_TABLE_QR",
     };
 
     setLastOrder(orderRecord);
@@ -108,68 +142,111 @@ export default function CustomerView({
     setCart({});
   }
 
-  return (
-    <div className="customer-view">
-      {/* Banner */}
-      <div className="role-banner">
-        <div className="role-banner-content">
-          <h2>بوابة الزبون — استكشف واطلب من: {cafe.name}</h2>
-          <p>
-            كل مقهى يتمتع بنظام فوترة مستقل، قائمة طعام فريدة، ورقم تعريف ضريبي وموحد (ICE: {cafe.ice})
-            معتمد لدى إدارة الضرائب المغربية.
-          </p>
-        </div>
-        <div className="role-banner-badge">📍 {cafe.city}</div>
-      </div>
-
-      {/* Customer Hero Banner */}
-      <div className="customer-hero">
+  const renderMainContent = () => (
+    <>
+      {/* Phone Table Order Feature Banner */}
+      <div className="phone-order-banner">
         <div>
-          <h2>
-            أهلاً بك في <span>{cafe.name}</span>
-          </h2>
-          <p>
-            تصفح القائمة الحصرية لهذا المقهى، أضف طلباتك للسلة واستلم فاتورتك الإلكترونية المعتمدة
-            فورياً برقم ICE المستقل.
-          </p>
-          <div className="search-box">
-            <span className="search-icon">🔍</span>
-            <input
-              type="text"
-              placeholder={`ابحث داخل منيو ${cafe.name}...`}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+          <div className="phone-order-badge">
+            <span>📱 طلب مباشر من الهاتف على الطاولة (QR Code)</span>
           </div>
+          <h3 style={{ fontSize: "20px", fontWeight: 900, margin: "8px 0 4px" }}>
+            جالس فالمقهى؟ اطلب ها من تيليفونك بلا ما تعيط على السرباي!
+          </h3>
+          <p style={{ fontSize: "13px", opacity: 0.9, margin: 0 }}>
+            امسح كود QR أو اختار رقم الطاولة ديالك، دوز الطلب، وغيوصلك حتى لطاولتك سخون وطازج.
+          </p>
         </div>
 
-        <div className="hero-feature-card">
-          <h4>✨ هوية المقهى المستقلة (Données Café)</h4>
-          <div className="hero-steps">
-            <div className="hero-step-item">
-              <span className="step-num">ICE</span>
-              <span>رقم المقاولة الموحد: {cafe.ice}</span>
-            </div>
-            <div className="hero-step-item">
-              <span className="step-num">📍</span>
-              <span>العنوان: {cafe.address}</span>
-            </div>
-            <div className="hero-step-item">
-              <span className="step-num">📞</span>
-              <span>الهاتف المباشر: {cafe.phone}</span>
-            </div>
-          </div>
+        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+          <button
+            type="button"
+            className="cat-pill active"
+            onClick={() => handleScanQr("طاولة 4 (ركن هادئ)")}
+            style={{ background: "var(--caramel-gold)", border: 0 }}
+          >
+            📸 محاكاة مسح كود QR للطاولة
+          </button>
+          <button
+            type="button"
+            className="cat-pill"
+            onClick={() => setIsPhoneFrame(!isPhoneFrame)}
+            style={{ background: "rgba(255,255,255,0.2)", color: "#fff", border: 0 }}
+          >
+            {isPhoneFrame ? "🖥️ عرض الشاشة الكاملة" : "📱 عرض شاشة الهاتف"}
+          </button>
         </div>
       </div>
 
-      {/* 1. Cafe Selector Cards Grid */}
+      {qrScannedFeedback && (
+        <div
+          style={{
+            background: "var(--success-bg)",
+            color: "var(--success)",
+            padding: "12px 18px",
+            borderRadius: "10px",
+            fontWeight: 800,
+            fontSize: "14px",
+            marginBottom: "20px",
+            border: "1px solid rgba(30,130,76,0.2)",
+          }}
+        >
+          {qrScannedFeedback}
+        </div>
+      )}
+
+      {/* Table Selector Box for In-Cafe Customer */}
+      <div className="table-selector-box" style={{ marginBottom: "24px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div>
+            <h4 style={{ fontSize: "15px", fontWeight: 900, color: "var(--primary-espresso)" }}>
+              📍 أنت جالس حالياً في: <span style={{ color: "var(--caramel-gold)" }}>{selectedTable}</span>
+            </h4>
+            <p style={{ fontSize: "12px", color: "var(--text-muted)", margin: "2px 0 0" }}>
+              اختر رقم الطاولة لي جالس فيها دابا باش السرباي والباريستا يعرفو فين يوصلو ليك القهوة:
+            </p>
+          </div>
+          <span style={{ fontSize: "12px", background: "#f5ece2", padding: "4px 10px", borderRadius: "6px", fontWeight: 700 }}>
+            {cafe.name}
+          </span>
+        </div>
+
+        <div className="tables-pills-row">
+          {AVAILABLE_TABLES.map((tbl) => (
+            <button
+              key={tbl}
+              type="button"
+              className={`table-pill-btn ${selectedTable === tbl ? "active" : ""}`}
+              onClick={() => setSelectedTable(tbl)}
+            >
+              🍽️ {tbl}
+            </button>
+          ))}
+        </div>
+
+        {/* Special Instructions for Barista / Waiter */}
+        <div style={{ marginTop: "12px" }}>
+          <label style={{ fontSize: "12px", fontWeight: 800, color: "var(--text-main)" }}>
+            📝 ملاحظة للباريستا (طلب خاص على ذوقك):
+          </label>
+          <input
+            type="text"
+            className="barista-notes-input"
+            placeholder="مثال: سكر ناقص، نص-نص سخونة بزاف، حليب خفيف، كاس ماء بارد مع القهوة..."
+            value={customerNote}
+            onChange={(e) => setCustomerNote(e.target.value)}
+          />
+        </div>
+      </div>
+
+      {/* 1. Cafe Selection Section */}
       <div className="q-section-header">
         <div>
-          <h3>🏪 اختر المقهى المستقل الذي تريد الطلب منه</h3>
+          <h3>🏪 اختر المقهى</h3>
           <p>كل مقهى له قائمته الخاصة، أسعاره، وفواتيره المعزولة كلياً</p>
         </div>
         <span style={{ fontSize: "13px", color: "var(--caramel-gold)", fontWeight: 700 }}>
-          {cafes.length} مقاهي مستقلة تماماً
+          {cafes.length} مقاهي متاحة
         </span>
       </div>
 
@@ -213,7 +290,7 @@ export default function CustomerView({
       <div className="q-section-header">
         <div>
           <h3>☕ قائمة مشروبات ومأكولات — {cafe.name}</h3>
-          <p>قائمة المنتجات الخاصة بهذا المقهى حصراً</p>
+          <p>اطلب مباشرة من هاتفك لطاولتك في المقهى</p>
         </div>
       </div>
 
@@ -292,20 +369,27 @@ export default function CustomerView({
       <div className="q-section-header" id="cart-section">
         <div>
           <h3>🛒 سلة الطلب لدى: {cafe.name}</h3>
-          <p>الفاتورة تصدر برقم ICE الخاص بهذا المقهى: {cafe.ice}</p>
+          <p>
+            الطلب سيوجه للباريستا والسرباي إلى: <strong>{selectedTable}</strong>
+          </p>
         </div>
       </div>
 
       <div className="cart-layout">
         <div className="cart-items-panel">
-          <h4 style={{ fontSize: "16px", fontWeight: 800, marginBottom: "16px" }}>
-            عناصر الطلب ({totalItems} قطع)
-          </h4>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+            <h4 style={{ fontSize: "16px", fontWeight: 800 }}>
+              عناصر الطلب ({totalItems} قطع)
+            </h4>
+            <span style={{ fontSize: "12px", background: "#fef3c7", color: "#92400e", padding: "4px 8px", borderRadius: "6px", fontWeight: 800 }}>
+              📱 طلب هاتف: {selectedTable}
+            </span>
+          </div>
 
           {totalItems === 0 ? (
             <div style={{ textAlign: "center", padding: "40px", color: "var(--text-muted)" }}>
               <div style={{ fontSize: "40px", marginBottom: "10px" }}>☕</div>
-              <p>السلة فارغة. اختر مشروباتك أو وجباتك من القائمة أعلاه!</p>
+              <p>السلة فارغة. اختر مشروباتك من المنيو أعلاه!</p>
             </div>
           ) : (
             cafe.products.filter((p) => cart[p.id]).map((p) => (
@@ -332,11 +416,11 @@ export default function CustomerView({
 
           <div style={{ marginTop: "24px", paddingTop: "18px", borderTop: "1px solid #eee" }}>
             <label style={{ fontSize: "13px", fontWeight: 800, color: "var(--primary-espresso)" }}>
-              نوع الاستهلاك:
+              مكان الاستهلاك:
             </label>
             <div style={{ display: "flex", gap: "10px", marginTop: "8px" }}>
               {[
-                { id: "DINE_IN", label: "🍽️ داخل المقهى" },
+                { id: "DINE_IN", label: `🍽️ داخل المقهى (${selectedTable.split(" ")[0]} ${selectedTable.split(" ")[1]})` },
                 { id: "TAKEAWAY", label: "🛍️ أخذ خارجي (Emporter)" },
                 { id: "DELIVERY", label: "🛵 توصيل سريع" },
               ].map((opt) => (
@@ -356,11 +440,23 @@ export default function CustomerView({
         {/* Cart Summary */}
         <div className="cart-summary-panel">
           <h4 style={{ fontSize: "16px", fontWeight: 800, marginBottom: "16px" }}>
-            الفاتورة القانونية الخاصة بـ {cafe.name}
+            تأكيد الطلب المباشر من الهاتف
           </h4>
 
           <div className="summary-row">
-            <span>المجموع بدون ضريبة (HT):</span>
+            <span>وجهة التسليم:</span>
+            <b style={{ color: "var(--caramel-gold)" }}>{selectedTable}</b>
+          </div>
+
+          {customerNote && (
+            <div className="summary-row" style={{ fontSize: "12px", color: "var(--text-muted)" }}>
+              <span>ملاحظة الباريستا:</span>
+              <i>"{customerNote}"</i>
+            </div>
+          )}
+
+          <div className="summary-row">
+            <span>المجموع الصافي (HT):</span>
             <b>{subtotalHt.toFixed(2)} د.م</b>
           </div>
 
@@ -390,7 +486,7 @@ export default function CustomerView({
                 onClick={() => setPaymentMethod("CASH")}
                 style={{ textAlign: "center" }}
               >
-                💵 نقداً بالصندوق
+                💵 نقداً عند الطاولة
               </button>
               <button
                 type="button"
@@ -398,7 +494,7 @@ export default function CustomerView({
                 onClick={() => setPaymentMethod("CARD")}
                 style={{ textAlign: "center" }}
               >
-                💳 بطاقة بنكية CMI
+                💳 بطاقة TPE مع السرباي
               </button>
             </div>
           </div>
@@ -408,29 +504,114 @@ export default function CustomerView({
             disabled={totalItems === 0}
             onClick={handleCheckout}
           >
-            تأكيد الطلب وإصدار فاتورة {cafe.name} ({totalTtc} د.م)
+            🚀 إرسال الطلب للباريستا للطاولة ({totalTtc} د.م)
           </button>
         </div>
       </div>
 
-      {/* 4. Instant Receipt */}
+      {/* 4. Live Table Order Tracking on Customer Phone */}
       {lastOrder && (
-        <div className="receipt-card">
+        <div className="receipt-card" style={{ border: "2px solid var(--caramel-gold)" }}>
           <div className="receipt-header">
-            <h4>🧾 فاتورة قانونية صادرة عن — {lastOrder.cafeName}</h4>
+            <span
+              style={{
+                background: "#fef3c7",
+                color: "#92400e",
+                padding: "4px 12px",
+                borderRadius: "999px",
+                fontSize: "12px",
+                fontWeight: 800,
+                display: "inline-block",
+                marginBottom: "8px",
+              }}
+            >
+              📱 تم إرسال الطلب بنجاح من هاتفك إلى كاونتر {lastOrder.cafeName}
+            </span>
+            <h4>☕ تتبع طلب الطاولة: {lastOrder.tableNumber || "طلب مباشر"}</h4>
             <div className="receipt-legal">
-              رقم الفاتورة: <strong>FAC-{new Date().getFullYear()}-{lastOrder.invoiceNumber}</strong> ·
-              رقم التعريف الموحد (ICE): <strong>{lastOrder.cafeIce}</strong> · الحالة:{" "}
-              <span className="badge-tag paid">مدفوعة ومسجلة في صندوق {cafe.name}</span>
+              رقم الطلب: <strong>{lastOrder.id}</strong> · الفاتورة:{" "}
+              <strong>FAC-{new Date().getFullYear()}-{lastOrder.invoiceNumber}</strong> · ICE:{" "}
+              <strong>{lastOrder.cafeIce}</strong>
             </div>
           </div>
 
-          <div style={{ maxWidth: "600px", margin: "0 auto" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", marginBottom: "8px" }}>
-              <span>رقم الطلب: <strong>{lastOrder.id}</strong></span>
-              <span>الوقت: <strong>{lastOrder.createdAt}</strong></span>
+          {/* Live Preparation Stepper */}
+          <div style={{ maxWidth: "560px", margin: "20px auto" }}>
+            <div className="stepper-container">
+              <div className="stepper-step completed">
+                <div className="stepper-circle">✓</div>
+                <div className="stepper-label">تم استلام الطلب بالصندوق</div>
+              </div>
+              <div className="stepper-step active">
+                <div className="stepper-circle">☕</div>
+                <div className="stepper-label">الباريستا يحضر الآن</div>
+              </div>
+              <div className="stepper-step">
+                <div className="stepper-circle">🏃</div>
+                <div className="stepper-label">السرباي في الطريق لطاولتك</div>
+              </div>
             </div>
 
+            {lastOrder.customerNote && (
+              <div
+                style={{
+                  background: "#fdf8f4",
+                  padding: "10px 14px",
+                  borderRadius: "8px",
+                  fontSize: "12px",
+                  color: "#7d5a3c",
+                  marginBottom: "16px",
+                  textAlign: "center",
+                }}
+              >
+                📝 ملاحظتك للباريستا: <strong>"{lastOrder.customerNote}"</strong>
+              </div>
+            )}
+
+            {/* In-Cafe Actions: Call Waiter / Request Bill */}
+            <div
+              style={{
+                display: "flex",
+                gap: "10px",
+                justifyContent: "center",
+                flexWrap: "wrap",
+                margin: "18px 0",
+              }}
+            >
+              <button
+                type="button"
+                className="btn-call-waiter"
+                onClick={handleCallWaiter}
+              >
+                🔔 استدعاء السرباي للطاولة ({lastOrder.tableNumber || "الطاولة"})
+              </button>
+              <button
+                type="button"
+                className="btn-export"
+                onClick={() => alert(`تم إشعار الكاشير! السرباي سيحضر فاتورة ${lastOrder.totalTtc} د.م وجهاز TPE إلى طاولتك.`)}
+              >
+                🧾 طلب الحساب عند الطاولة ({lastOrder.totalTtc} د.م)
+              </button>
+            </div>
+
+            {waiterCalledMsg && (
+              <div
+                style={{
+                  background: "var(--success-bg)",
+                  color: "var(--success)",
+                  padding: "10px",
+                  borderRadius: "8px",
+                  textAlign: "center",
+                  fontWeight: 800,
+                  fontSize: "13px",
+                  marginBottom: "16px",
+                }}
+              >
+                {waiterCalledMsg}
+              </div>
+            )}
+
+            {/* Order Items Table */}
             <table className="q-table" style={{ margin: "14px 0" }}>
               <thead>
                 <tr>
@@ -481,13 +662,41 @@ export default function CustomerView({
             <div style={{ textAlign: "center", marginTop: "18px" }}>
               <button
                 className="btn-export"
-                onClick={() => alert(`تم تحميل فاتورة ${lastOrder.cafeName} الرسمية FAC-${new Date().getFullYear()}-${lastOrder.invoiceNumber}.pdf بنجاح!`)}
+                onClick={() => alert(`تم تحميل فاتورة الهاتف الرسمية FAC-${new Date().getFullYear()}-${lastOrder.invoiceNumber}.pdf بنجاح!`)}
               >
-                📥 تحميل الفاتورة الرسمية بصيغة PDF
+                📥 حفظ الفاتورة الإلكترونية على هاتفك (PDF)
               </button>
             </div>
           </div>
         </div>
+      )}
+    </>
+  );
+
+  return (
+    <div className="customer-view">
+      {isPhoneFrame ? (
+        <div>
+          <div style={{ textAlign: "center", marginBottom: "16px" }}>
+            <span style={{ fontSize: "13px", fontWeight: 800, color: "var(--text-muted)" }}>
+              📱 أنت تشاهد الآن شاشة الهاتف الذكي للزبون الجالس في المقهى
+            </span>
+            <button
+              type="button"
+              onClick={() => setIsPhoneFrame(false)}
+              className="cat-pill"
+              style={{ marginRight: "10px" }}
+            >
+              ✕ إغلاق وضع الهاتف
+            </button>
+          </div>
+          <div className="phone-frame-mockup">
+            <div className="phone-notch"></div>
+            <div className="phone-screen">{renderMainContent()}</div>
+          </div>
+        </div>
+      ) : (
+        renderMainContent()
       )}
     </div>
   );

@@ -37,12 +37,17 @@ export default function QahwatiApp() {
 
         const newTicket: LiveTicket = {
           id: order.id,
-          tableOrClient: "طلب إلكتروني (الزبون)",
+          tableOrClient: order.tableNumber
+            ? `📱 هاتف: ${order.tableNumber}`
+            : "طلب إلكتروني (الزبون)",
           items: order.items.map((it) => `${it.quantity}x ${it.name}`),
           totalMad: order.totalTtc,
           time: "الآن",
           status: "NEW",
           paymentMethod: order.paymentMethod,
+          tableNumber: order.tableNumber,
+          isPhoneOrder: Boolean(order.tableNumber),
+          notes: order.customerNote,
         };
 
         const newInvoice: InvoiceRecord = {
@@ -62,7 +67,7 @@ export default function QahwatiApp() {
           totalTtc: order.totalTtc,
           paymentMethod: order.paymentMethod,
           status: "PAID",
-          client: "زبون تطبيق قهوتي",
+          client: order.tableNumber ? `زبون هاتف (${order.tableNumber})` : "زبون تطبيق قهوتي",
         };
 
         const isCash = order.paymentMethod === "CASH";

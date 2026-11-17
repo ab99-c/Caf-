@@ -19,6 +19,9 @@ export interface LiveTicket {
   time: string;
   status: "NEW" | "PREPARING" | "READY" | "COMPLETED";
   paymentMethod: "CASH" | "CARD";
+  tableNumber?: string;
+  isPhoneOrder?: boolean;
+  notes?: string;
 }
 
 export interface InvoiceRecord {
