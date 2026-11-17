@@ -245,10 +245,10 @@ export default function QahwatiApp() {
         style={{
           borderTop: "1px solid var(--card-border)",
           background: "#1a0f0a",
-          color: "#c9b8aa",
-          padding: "32px 24px",
+          color: "#9a8b7f",
+          padding: "20px 24px",
           textAlign: "center",
-          fontSize: "13px",
+          fontSize: "12px",
         }}
       >
         <div
@@ -259,18 +259,16 @@ export default function QahwatiApp() {
             justifyContent: "space-between",
             alignItems: "center",
             flexWrap: "wrap",
-            gap: "16px",
+            gap: "12px",
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <span style={{ fontSize: "20px" }}>☕</span>
-            <strong style={{ color: "#fff" }}>منصة قهوتي (Qahwati Multi-Tenant)</strong>
-            <span>
-              — كل مقهى مستقل بذاته: سجل تجاري مستقل، ICE مستقل، صندوق كاش مستقل، وقائمة منتجات منفصلة
-            </span>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <span style={{ fontSize: "16px" }}>☕</span>
+            <strong style={{ color: "#fff" }}>منصة قهوتي (Qahwati)</strong>
+            <span>— نظام الطلب والفوترة السحابية للمقاهي</span>
           </div>
-          <div style={{ fontSize: "12px", color: "var(--amber-light)" }}>
-            نظام عزل البيانات الكامل للمقاهي بالمغرب · TVA 10%
+          <div>
+            نظام متوافق مع المعايير الجبائية المغربية · ICE & TVA 10%
           </div>
         </div>
       </footer>

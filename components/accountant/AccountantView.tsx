@@ -31,30 +31,43 @@ export default function AccountantView({
   });
 
   function handleCancel(invoiceId: string, number: number) {
-    if (!confirm(`هل تريد إلغاء الفاتورة FAC-${new Date().getFullYear()}-${number} الخاصة بـ ${cafe.name}؟`)) {
+    if (!confirm(`هل تريد إلغاء الفاتورة FAC-${new Date().getFullYear()}-${number} وإصدار إشعار دائن (Facture d'Avoir)؟`)) {
       return;
     }
     onCancelInvoice(cafe.id, invoiceId, number);
-    setFeedback(`✓ تم إلغاء الفاتورة وإصدار إشعار دائن (Avoir) رسمي في حسابات ${cafe.name}`);
+    setFeedback(`✓ تم إلغاء الفاتورة FAC-${new Date().getFullYear()}-${number} وقيد إشعار الدائن`);
     setTimeout(() => setFeedback(""), 4000);
   }
 
   function handleExportCsv() {
-    alert(`تم تصدير سجل مبيعات ${cafe.name} (ICE: ${cafe.ice}) بصيغة CSV المتوافقة مع إدارة الضرائب!`);
+    alert(`تم تصدير سجل مبيعات ${cafe.name} (ICE: ${cafe.ice}) بصيغة CSV المتوافقة مع برامج المحاسبة.`);
   }
 
   return (
     <div className="accountant-view">
-      {/* Banner */}
-      <div className="role-banner">
-        <div className="role-banner-content">
-          <h2>بوابة المحاسب — الحسابات المستقلة لـ: {cafe.name}</h2>
-          <p>
-            تتبع دفتر مبيعات هذا المقهى، الضريبة على القيمة المضافة المحصلة (TVA 10%)، والإقرار الضريبي
-            المرتبط بـ ICE: {cafe.ice} بشكل مستقل تام.
-          </p>
+      {/* Top Header */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "20px",
+          flexWrap: "wrap",
+          gap: "10px",
+        }}
+      >
+        <div>
+          <h2 style={{ fontSize: "18px", fontWeight: 900, margin: 0, color: "var(--primary-espresso)" }}>
+            دفتر المبيعات والحسابات — {cafe.name}
+          </h2>
+          <div style={{ fontSize: "12px", color: "var(--text-muted)" }}>
+            رقم الـ ICE: {cafe.ice} · السجل التجاري: {cafe.rc} · المعرف الضريبي: {cafe.taxId}
+          </div>
         </div>
-        <div className="role-banner-badge">📊 المقاولة: {cafe.ice}</div>
+
+        <button className="btn-export" onClick={handleExportCsv} type="button">
+          📥 تصدير السجل المحاسبي (Excel / CSV)
+        </button>
       </div>
 
       {feedback && (
@@ -62,40 +75,22 @@ export default function AccountantView({
           style={{
             background: "var(--success-bg)",
             color: "var(--success)",
-            padding: "14px 18px",
-            borderRadius: "10px",
+            padding: "10px 16px",
+            borderRadius: "8px",
             fontWeight: 800,
-            marginBottom: "20px",
+            fontSize: "13px",
+            marginBottom: "16px",
           }}
         >
           {feedback}
         </div>
       )}
 
-      {/* Cafe Quick Switcher Tab */}
-      <div style={{ marginBottom: "20px", display: "flex", alignItems: "center", gap: "10px" }}>
-        <span style={{ fontSize: "13px", fontWeight: 800, color: "var(--text-muted)" }}>
-          اختر ملف المقهى المحاسبي:
-        </span>
-        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-          {cafes.map((c) => (
-            <button
-              key={c.id}
-              type="button"
-              onClick={() => onSelectCafe(c.id)}
-              className={`cat-pill ${c.id === cafe.id ? "active" : ""}`}
-            >
-              🏢 {c.name} (ICE: {c.ice.slice(-4)})
-            </button>
-          ))}
-        </div>
-      </div>
-
       {/* Financial Metrics Summary */}
       <div className="metrics-grid">
         <div className="metric-card">
           <div className="metric-title">
-            <span>المبيعات الصافية (HT) — {cafe.name.split(" ")[0]}</span>
+            <span>المبيعات الصافية (HT)</span>
             <span>📑</span>
           </div>
           <div className="metric-value">{totalHt.toFixed(2)} د.م</div>
@@ -110,66 +105,58 @@ export default function AccountantView({
           <div className="metric-value" style={{ color: "var(--caramel-gold)" }}>
             {totalVat.toFixed(2)} د.م
           </div>
-          <div className="metric-hint">خاصة بـ ICE: {cafe.ice}</div>
+          <div className="metric-hint">واجبة الأداء لإدارة الضرائب</div>
         </div>
 
         <div className="metric-card">
           <div className="metric-title">
-            <span>المبيعات شاملة الضريبة (TTC)</span>
+            <span>المبيعات الإجمالية (TTC)</span>
             <span>💵</span>
           </div>
           <div className="metric-value">{totalTtc.toFixed(2)} د.م</div>
-          <div className="metric-hint">المدخول القانوني الموثق</div>
+          <div className="metric-hint">إجمالي المقبوضات الموثقة</div>
         </div>
 
         <div className="metric-card">
           <div className="metric-title">
-            <span>الفواتير المؤداة</span>
+            <span>الفواتير المصرح بها</span>
             <span>✅</span>
           </div>
           <div className="metric-value">
             {validInvoices.length} <small style={{ fontSize: "14px", color: "var(--text-muted)" }}>/ {cafe.invoices.length}</small>
           </div>
-          <div className="metric-hint">تسلسل رقمي سليم بدون انقطاع</div>
+          <div className="metric-hint">تسلسل رقمي بدون انقطاع</div>
         </div>
       </div>
 
-      {/* Journal des Ventes */}
-      <div className="q-section-header">
+      {/* Journal des Ventes Filter */}
+      <div className="q-section-header" style={{ marginBottom: "14px" }}>
         <div>
-          <h3>📋 دفتر مبيعات {cafe.name} (Journal des Ventes)</h3>
-          <p>
-            السجل المحاسبي المرتبط بـ ICE: {cafe.ice} · السجل التجاري: {cafe.rc}
-          </p>
+          <h3>📋 دفتر مبيعات الفواتير الصادرة</h3>
+          <p>سجل الفواتير المرتبطة قانونياً بـ ICE: {cafe.ice}</p>
         </div>
 
-        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-          <div style={{ display: "flex", gap: "6px" }}>
-            <button
-              className={`cat-pill ${filterMethod === "ALL" ? "active" : ""}`}
-              onClick={() => setFilterMethod("ALL")}
-              type="button"
-            >
-              الكل
-            </button>
-            <button
-              className={`cat-pill ${filterMethod === "CASH" ? "active" : ""}`}
-              onClick={() => setFilterMethod("CASH")}
-              type="button"
-            >
-              نقداً (Espèces)
-            </button>
-            <button
-              className={`cat-pill ${filterMethod === "CARD" ? "active" : ""}`}
-              onClick={() => setFilterMethod("CARD")}
-              type="button"
-            >
-              بطاقة (TPE)
-            </button>
-          </div>
-
-          <button className="btn-export" onClick={handleExportCsv} type="button">
-            📥 تصدير سجل {cafe.name.split(" ")[0]} (Excel)
+        <div style={{ display: "flex", gap: "6px" }}>
+          <button
+            className={`cat-pill ${filterMethod === "ALL" ? "active" : ""}`}
+            onClick={() => setFilterMethod("ALL")}
+            type="button"
+          >
+            الكل
+          </button>
+          <button
+            className={`cat-pill ${filterMethod === "CASH" ? "active" : ""}`}
+            onClick={() => setFilterMethod("CASH")}
+            type="button"
+          >
+            نقداً
+          </button>
+          <button
+            className={`cat-pill ${filterMethod === "CARD" ? "active" : ""}`}
+            onClick={() => setFilterMethod("CARD")}
+            type="button"
+          >
+            بطاقة بنكية
           </button>
         </div>
       </div>
@@ -250,43 +237,6 @@ export default function AccountantView({
             )}
           </tbody>
         </table>
-      </div>
-
-      {/* Tax Settlement Box */}
-      <div
-        style={{
-          marginTop: "28px",
-          background: "#fff",
-          border: "1px solid var(--card-border)",
-          borderRadius: "var(--radius-lg)",
-          padding: "24px",
-          display: "grid",
-          gridTemplateColumns: "1.2fr 0.8fr",
-          gap: "24px",
-          alignItems: "center",
-        }}
-      >
-        <div>
-          <h4 style={{ fontSize: "17px", fontWeight: 900, color: "var(--primary-espresso)", marginBottom: "6px" }}>
-            📑 إقرار ضريبي مسبق خاص بـ: {cafe.name}
-          </h4>
-          <p style={{ fontSize: "13px", color: "var(--text-muted)", lineHeight: "1.6" }}>
-            البيانات معزولة وجاهزة للتصريح بها في منصة Simpl-TVA للرقم الموحد {cafe.ice} دون خلط
-            مع أي مؤسسة أو فرع آخر.
-          </p>
-        </div>
-
-        <div style={{ background: "var(--crema-bg)", padding: "16px", borderRadius: "12px", textAlign: "left" }}>
-          <div style={{ fontSize: "12px", color: "var(--text-muted)", marginBottom: "4px" }}>
-            TVA المستحقة على {cafe.name.split(" ")[0]}:
-          </div>
-          <div style={{ fontSize: "26px", fontWeight: 900, color: "var(--primary-espresso)" }}>
-            {totalVat.toFixed(2)} درهم مغربي
-          </div>
-          <div style={{ fontSize: "11px", color: "var(--success)", fontWeight: 700, marginTop: "4px" }}>
-            ✓ متطابقة مع سجلات كاشير الفرع
-          </div>
-        </div>
       </div>
     </div>
   );

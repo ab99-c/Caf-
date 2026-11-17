@@ -28,14 +28,13 @@ interface CustomerViewProps {
 }
 
 const AVAILABLE_TABLES = [
-  "طاولة 1 (نافذة)",
-  "طاولة 2 (وسط)",
-  "طاولة 3 (صالون)",
-  "طاولة 4 (ركن هادئ)",
-  "طاولة 5 (VIP)",
-  "شرفة 1 (إطلالة خارجية)",
-  "شرفة 2 (تراس)",
-  "شرفة 3 (تراس)",
+  "طاولة 1",
+  "طاولة 2",
+  "طاولة 3",
+  "طاولة 4",
+  "طاولة 5",
+  "شرفة 1",
+  "شرفة 2",
 ];
 
 export default function CustomerView({
@@ -48,13 +47,10 @@ export default function CustomerView({
   const [cart, setCart] = useState<Record<string, number>>({});
   const [search, setSearch] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<"CASH" | "CARD">("CASH");
-  const [diningOption, setDiningOption] = useState<"TAKEAWAY" | "DINE_IN" | "DELIVERY">("DINE_IN");
-  const [selectedTable, setSelectedTable] = useState<string>("طاولة 4 (ركن هادئ)");
+  const [selectedTable, setSelectedTable] = useState<string>("طاولة 4");
   const [customerNote, setCustomerNote] = useState<string>("");
-  const [isPhoneFrame, setIsPhoneFrame] = useState<boolean>(false);
   const [lastOrder, setLastOrder] = useState<CreatedOrder | null>(null);
   const [waiterCalledMsg, setWaiterCalledMsg] = useState<string>("");
-  const [qrScannedFeedback, setQrScannedFeedback] = useState<string>("");
 
   const categories = useMemo(() => {
     const set = new Set<string>(["الكل"]);
@@ -73,7 +69,6 @@ export default function CustomerView({
 
   const totalItems = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
 
-  // Moroccan VAT calculation: 10% VAT
   const totalTtc = useMemo(() => {
     return cafe.products.reduce((sum, p) => sum + p.priceMad * (cart[p.id] || 0), 0);
   }, [cafe.products, cart]);
@@ -97,15 +92,8 @@ export default function CustomerView({
     });
   }
 
-  function handleScanQr(table: string) {
-    setSelectedTable(table);
-    setDiningOption("DINE_IN");
-    setQrScannedFeedback(`📸 تم مسح كود QR بنجاح! أنت جالس في: ${table}`);
-    setTimeout(() => setQrScannedFeedback(""), 4000);
-  }
-
   function handleCallWaiter() {
-    setWaiterCalledMsg(`🔔 تم إشعار النادل! السرباي في طريقه الآن إلى ${selectedTable}`);
+    setWaiterCalledMsg(`🔔 تم إشعار النادل، السرباي في طريقه الآن إلى ${selectedTable}!`);
     setTimeout(() => setWaiterCalledMsg(""), 5000);
   }
 
@@ -132,7 +120,7 @@ export default function CustomerView({
       createdAt: new Date().toLocaleTimeString("ar-MA", { hour: "2-digit", minute: "2-digit" }),
       cafeIce: cafe.ice,
       cafeName: cafe.name,
-      tableNumber: diningOption === "DINE_IN" ? selectedTable : undefined,
+      tableNumber: selectedTable,
       customerNote: customerNote.trim() || undefined,
       orderSource: "PHONE_TABLE_QR",
     };
@@ -142,172 +130,79 @@ export default function CustomerView({
     setCart({});
   }
 
-  const renderMainContent = () => (
-    <>
-      {/* Phone Table Order Feature Banner */}
-      <div className="phone-order-banner">
-        <div>
-          <div className="phone-order-badge">
-            <span>📱 طلب مباشر من الهاتف على الطاولة (QR Code)</span>
-          </div>
-          <h3 style={{ fontSize: "20px", fontWeight: 900, margin: "8px 0 4px" }}>
-            جالس فالمقهى؟ اطلب ها من تيليفونك بلا ما تعيط على السرباي!
-          </h3>
-          <p style={{ fontSize: "13px", opacity: 0.9, margin: 0 }}>
-            امسح كود QR أو اختار رقم الطاولة ديالك، دوز الطلب، وغيوصلك حتى لطاولتك سخون وطازج.
-          </p>
-        </div>
-
-        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-          <button
-            type="button"
-            className="cat-pill active"
-            onClick={() => handleScanQr("طاولة 4 (ركن هادئ)")}
-            style={{ background: "var(--caramel-gold)", border: 0 }}
-          >
-            📸 محاكاة مسح كود QR للطاولة
-          </button>
-          <button
-            type="button"
-            className="cat-pill"
-            onClick={() => setIsPhoneFrame(!isPhoneFrame)}
-            style={{ background: "rgba(255,255,255,0.2)", color: "#fff", border: 0 }}
-          >
-            {isPhoneFrame ? "🖥️ عرض الشاشة الكاملة" : "📱 عرض شاشة الهاتف"}
-          </button>
-        </div>
-      </div>
-
-      {qrScannedFeedback && (
-        <div
-          style={{
-            background: "var(--success-bg)",
-            color: "var(--success)",
-            padding: "12px 18px",
-            borderRadius: "10px",
-            fontWeight: 800,
-            fontSize: "14px",
-            marginBottom: "20px",
-            border: "1px solid rgba(30,130,76,0.2)",
-          }}
-        >
-          {qrScannedFeedback}
-        </div>
-      )}
-
-      {/* Table Selector Box for In-Cafe Customer */}
-      <div className="table-selector-box" style={{ marginBottom: "24px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+  return (
+    <div className="customer-view">
+      {/* 1. In-Cafe Table Selection Bar */}
+      <div
+        style={{
+          background: "#fff",
+          border: "1px solid var(--card-border)",
+          borderRadius: "16px",
+          padding: "16px 20px",
+          marginBottom: "24px",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: "14px",
+          boxShadow: "var(--shadow-sm)",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <span style={{ fontSize: "24px" }}>📱</span>
           <div>
-            <h4 style={{ fontSize: "15px", fontWeight: 900, color: "var(--primary-espresso)" }}>
-              📍 أنت جالس حالياً في: <span style={{ color: "var(--caramel-gold)" }}>{selectedTable}</span>
-            </h4>
-            <p style={{ fontSize: "12px", color: "var(--text-muted)", margin: "2px 0 0" }}>
-              اختر رقم الطاولة لي جالس فيها دابا باش السرباي والباريستا يعرفو فين يوصلو ليك القهوة:
-            </p>
+            <div style={{ fontSize: "14px", fontWeight: 900, color: "var(--primary-espresso)" }}>
+              طلب مباشر من الهاتف على الطاولة
+            </div>
+            <div style={{ fontSize: "12px", color: "var(--text-muted)" }}>
+              اختر رقم طاولتك وسيتوجه النادل بطلبك فور تحضيره
+            </div>
           </div>
-          <span style={{ fontSize: "12px", background: "#f5ece2", padding: "4px 10px", borderRadius: "6px", fontWeight: 700 }}>
-            {cafe.name}
-          </span>
         </div>
 
-        <div className="tables-pills-row">
+        <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
+          <span style={{ fontSize: "12px", fontWeight: 800 }}>رقم الطاولة:</span>
           {AVAILABLE_TABLES.map((tbl) => (
             <button
               key={tbl}
               type="button"
               className={`table-pill-btn ${selectedTable === tbl ? "active" : ""}`}
               onClick={() => setSelectedTable(tbl)}
+              style={{ padding: "6px 12px", fontSize: "12px" }}
             >
-              🍽️ {tbl}
+              {tbl}
             </button>
           ))}
         </div>
+      </div>
 
-        {/* Special Instructions for Barista / Waiter */}
-        <div style={{ marginTop: "12px" }}>
-          <label style={{ fontSize: "12px", fontWeight: 800, color: "var(--text-main)" }}>
-            📝 ملاحظة للباريستا (طلب خاص على ذوقك):
-          </label>
+      {/* 2. Search & Category Filter */}
+      <div style={{ display: "flex", gap: "14px", marginBottom: "20px", alignItems: "center", flexWrap: "wrap" }}>
+        <div className="search-box" style={{ flex: 1, minWidth: "260px" }}>
+          <span className="search-icon">🔍</span>
           <input
             type="text"
-            className="barista-notes-input"
-            placeholder="مثال: سكر ناقص، نص-نص سخونة بزاف، حليب خفيف، كاس ماء بارد مع القهوة..."
-            value={customerNote}
-            onChange={(e) => setCustomerNote(e.target.value)}
+            placeholder={`ابحث في منيو ${cafe.name}...`}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-      </div>
 
-      {/* 1. Cafe Selection Section */}
-      <div className="q-section-header">
-        <div>
-          <h3>🏪 اختر المقهى</h3>
-          <p>كل مقهى له قائمته الخاصة، أسعاره، وفواتيره المعزولة كلياً</p>
-        </div>
-        <span style={{ fontSize: "13px", color: "var(--caramel-gold)", fontWeight: 700 }}>
-          {cafes.length} مقاهي متاحة
-        </span>
-      </div>
-
-      <div className="cafes-grid">
-        {cafes.map((c) => {
-          const isSelected = c.id === cafe.id;
-          return (
-            <div
-              key={c.id}
-              className={`cafe-card ${isSelected ? "selected" : ""}`}
-              onClick={() => onSelectCafe(c.id)}
+        <div className="category-pills" style={{ margin: 0, padding: 0 }}>
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              className={`cat-pill ${selectedCategory === cat ? "active" : ""}`}
+              onClick={() => setSelectedCategory(cat)}
+              type="button"
             >
-              <div
-                className="cafe-card-image"
-                style={{ backgroundImage: `url(${c.image})` }}
-              >
-                <span className="cafe-status-badge">
-                  {isSelected ? "✓ المقهى المختار حالياً" : "● اضغط للاختيار"}
-                </span>
-                <span className="cafe-ice-badge">ICE: {c.ice}</span>
-              </div>
-              <div className="cafe-card-body">
-                <div>
-                  <div className="cafe-card-title">
-                    <h4>{c.name}</h4>
-                    <span className="cafe-rating">★ {c.rating}</span>
-                  </div>
-                  <div className="cafe-type">{c.type}</div>
-                </div>
-                <div className="cafe-meta">
-                  <span>📍 {c.city}</span>
-                  <span>⏱️ {c.deliveryMinutes} دقيقة</span>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* 2. Menu Section for Currently Selected Cafe */}
-      <div className="q-section-header">
-        <div>
-          <h3>☕ قائمة مشروبات ومأكولات — {cafe.name}</h3>
-          <p>اطلب مباشرة من هاتفك لطاولتك في المقهى</p>
+              {cat}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Category Pills */}
-      <div className="category-pills">
-        {categories.map((cat) => (
-          <button
-            key={cat}
-            className={`cat-pill ${selectedCategory === cat ? "active" : ""}`}
-            onClick={() => setSelectedCategory(cat)}
-            type="button"
-          >
-            {cat}
-          </button>
-        ))}
-      </div>
-
+      {/* 3. Products Grid */}
       <div className="menu-grid">
         {filteredProducts.map((p) => {
           const inCartQty = cart[p.id] || 0;
@@ -365,30 +260,23 @@ export default function CustomerView({
         })}
       </div>
 
-      {/* 3. Cart & Checkout Section */}
-      <div className="q-section-header" id="cart-section">
+      {/* 4. Cart & Checkout Drawer */}
+      <div className="q-section-header" id="cart-section" style={{ marginTop: "30px" }}>
         <div>
-          <h3>🛒 سلة الطلب لدى: {cafe.name}</h3>
-          <p>
-            الطلب سيوجه للباريستا والسرباي إلى: <strong>{selectedTable}</strong>
-          </p>
+          <h3>🛒 سلة المشتريات — {selectedTable}</h3>
+          <p>تأكيد الطلب المباشر من الهاتف وإرساله لكاونتر {cafe.name}</p>
         </div>
       </div>
 
       <div className="cart-layout">
         <div className="cart-items-panel">
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-            <h4 style={{ fontSize: "16px", fontWeight: 800 }}>
-              عناصر الطلب ({totalItems} قطع)
-            </h4>
-            <span style={{ fontSize: "12px", background: "#fef3c7", color: "#92400e", padding: "4px 8px", borderRadius: "6px", fontWeight: 800 }}>
-              📱 طلب هاتف: {selectedTable}
-            </span>
-          </div>
+          <h4 style={{ fontSize: "16px", fontWeight: 800, marginBottom: "16px" }}>
+            عناصر الطلب ({totalItems} قطع)
+          </h4>
 
           {totalItems === 0 ? (
-            <div style={{ textAlign: "center", padding: "40px", color: "var(--text-muted)" }}>
-              <div style={{ fontSize: "40px", marginBottom: "10px" }}>☕</div>
+            <div style={{ textAlign: "center", padding: "30px", color: "var(--text-muted)" }}>
+              <div style={{ fontSize: "36px", marginBottom: "8px" }}>☕</div>
               <p>السلة فارغة. اختر مشروباتك من المنيو أعلاه!</p>
             </div>
           ) : (
@@ -396,7 +284,7 @@ export default function CustomerView({
               <div key={p.id} className="cart-item-row">
                 <div className="cart-item-info">
                   <h5>{p.name}</h5>
-                  <span>{p.priceMad} د.م للقطعة · شامل TVA 10%</span>
+                  <span>{p.priceMad} د.م للقطعة</span>
                 </div>
                 <div className="cart-item-qty">
                   <button className="qty-btn" onClick={() => removeFromCart(p.id)}>
@@ -414,46 +302,31 @@ export default function CustomerView({
             ))
           )}
 
-          <div style={{ marginTop: "24px", paddingTop: "18px", borderTop: "1px solid #eee" }}>
-            <label style={{ fontSize: "13px", fontWeight: 800, color: "var(--primary-espresso)" }}>
-              مكان الاستهلاك:
+          {/* Special note for barista */}
+          <div style={{ marginTop: "18px", paddingTop: "14px", borderTop: "1px solid #eee" }}>
+            <label style={{ fontSize: "12px", fontWeight: 800, color: "var(--text-main)" }}>
+              ملاحظة للباريستا (اختياري):
             </label>
-            <div style={{ display: "flex", gap: "10px", marginTop: "8px" }}>
-              {[
-                { id: "DINE_IN", label: `🍽️ داخل المقهى (${selectedTable.split(" ")[0]} ${selectedTable.split(" ")[1]})` },
-                { id: "TAKEAWAY", label: "🛍️ أخذ خارجي (Emporter)" },
-                { id: "DELIVERY", label: "🛵 توصيل سريع" },
-              ].map((opt) => (
-                <button
-                  key={opt.id}
-                  type="button"
-                  onClick={() => setDiningOption(opt.id as any)}
-                  className={`cat-pill ${diningOption === opt.id ? "active" : ""}`}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
+            <input
+              type="text"
+              className="barista-notes-input"
+              placeholder="مثال: سكر ناقص، نص-نص سخونة بزاف..."
+              value={customerNote}
+              onChange={(e) => setCustomerNote(e.target.value)}
+            />
           </div>
         </div>
 
-        {/* Cart Summary */}
+        {/* Checkout Summary */}
         <div className="cart-summary-panel">
-          <h4 style={{ fontSize: "16px", fontWeight: 800, marginBottom: "16px" }}>
-            تأكيد الطلب المباشر من الهاتف
+          <h4 style={{ fontSize: "16px", fontWeight: 800, marginBottom: "14px" }}>
+            ملخص الحساب
           </h4>
 
           <div className="summary-row">
-            <span>وجهة التسليم:</span>
+            <span>تسليم إلى:</span>
             <b style={{ color: "var(--caramel-gold)" }}>{selectedTable}</b>
           </div>
-
-          {customerNote && (
-            <div className="summary-row" style={{ fontSize: "12px", color: "var(--text-muted)" }}>
-              <span>ملاحظة الباريستا:</span>
-              <i>"{customerNote}"</i>
-            </div>
-          )}
 
           <div className="summary-row">
             <span>المجموع الصافي (HT):</span>
@@ -461,40 +334,35 @@ export default function CustomerView({
           </div>
 
           <div className="summary-row">
-            <span>
-              ضريبة القيمة المضافة (TVA 10%):
-              <span className="summary-vat-tag" style={{ marginRight: "6px" }}>
-                قانون المالية المغربي
-              </span>
-            </span>
+            <span>الضريبة (TVA 10%):</span>
             <b>{vatMad.toFixed(2)} د.م</b>
           </div>
 
           <div className="summary-row total">
-            <span>المجموع الإجمالي (TTC):</span>
+            <span>المجموع الإجمالي:</span>
             <b style={{ color: "var(--caramel-gold)" }}>{totalTtc} د.م</b>
           </div>
 
-          <div style={{ marginTop: "20px" }}>
-            <label style={{ fontSize: "13px", fontWeight: 800, display: "block", marginBottom: "8px" }}>
-              طريقة الأداء:
+          <div style={{ marginTop: "16px" }}>
+            <label style={{ fontSize: "12px", fontWeight: 800, display: "block", marginBottom: "6px" }}>
+              طريقة الأداء عند الطاولة:
             </label>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
               <button
                 type="button"
                 className={`cat-pill ${paymentMethod === "CASH" ? "active" : ""}`}
                 onClick={() => setPaymentMethod("CASH")}
-                style={{ textAlign: "center" }}
+                style={{ textAlign: "center", fontSize: "12px" }}
               >
-                💵 نقداً عند الطاولة
+                💵 نقداً
               </button>
               <button
                 type="button"
                 className={`cat-pill ${paymentMethod === "CARD" ? "active" : ""}`}
                 onClick={() => setPaymentMethod("CARD")}
-                style={{ textAlign: "center" }}
+                style={{ textAlign: "center", fontSize: "12px" }}
               >
-                💳 بطاقة TPE مع السرباي
+                💳 بطاقة TPE
               </button>
             </div>
           </div>
@@ -504,93 +372,54 @@ export default function CustomerView({
             disabled={totalItems === 0}
             onClick={handleCheckout}
           >
-            🚀 إرسال الطلب للباريستا للطاولة ({totalTtc} د.م)
+            تأكيد الطلب ({totalTtc} د.م)
           </button>
         </div>
       </div>
 
-      {/* 4. Live Table Order Tracking on Customer Phone */}
+      {/* 5. Live Table Order Tracking & Waiter Call */}
       {lastOrder && (
-        <div className="receipt-card" style={{ border: "2px solid var(--caramel-gold)" }}>
+        <div className="receipt-card" style={{ border: "2px solid var(--caramel-gold)", marginTop: "30px" }}>
           <div className="receipt-header">
-            <span
-              style={{
-                background: "#fef3c7",
-                color: "#92400e",
-                padding: "4px 12px",
-                borderRadius: "999px",
-                fontSize: "12px",
-                fontWeight: 800,
-                display: "inline-block",
-                marginBottom: "8px",
-              }}
-            >
-              📱 تم إرسال الطلب بنجاح من هاتفك إلى كاونتر {lastOrder.cafeName}
-            </span>
-            <h4>☕ تتبع طلب الطاولة: {lastOrder.tableNumber || "طلب مباشر"}</h4>
+            <h4>☕ جاري تحضير طلب: {lastOrder.tableNumber}</h4>
             <div className="receipt-legal">
               رقم الطلب: <strong>{lastOrder.id}</strong> · الفاتورة:{" "}
-              <strong>FAC-{new Date().getFullYear()}-{lastOrder.invoiceNumber}</strong> · ICE:{" "}
-              <strong>{lastOrder.cafeIce}</strong>
+              <strong>FAC-{new Date().getFullYear()}-{lastOrder.invoiceNumber}</strong>
             </div>
           </div>
 
-          {/* Live Preparation Stepper */}
-          <div style={{ maxWidth: "560px", margin: "20px auto" }}>
+          <div style={{ maxWidth: "560px", margin: "16px auto" }}>
+            {/* Stepper */}
             <div className="stepper-container">
               <div className="stepper-step completed">
                 <div className="stepper-circle">✓</div>
-                <div className="stepper-label">تم استلام الطلب بالصندوق</div>
+                <div className="stepper-label">تم الاستلام</div>
               </div>
               <div className="stepper-step active">
                 <div className="stepper-circle">☕</div>
-                <div className="stepper-label">الباريستا يحضر الآن</div>
+                <div className="stepper-label">قيد التحضير</div>
               </div>
               <div className="stepper-step">
                 <div className="stepper-circle">🏃</div>
-                <div className="stepper-label">السرباي في الطريق لطاولتك</div>
+                <div className="stepper-label">في الطريق لطاولتك</div>
               </div>
             </div>
 
-            {lastOrder.customerNote && (
-              <div
-                style={{
-                  background: "#fdf8f4",
-                  padding: "10px 14px",
-                  borderRadius: "8px",
-                  fontSize: "12px",
-                  color: "#7d5a3c",
-                  marginBottom: "16px",
-                  textAlign: "center",
-                }}
-              >
-                📝 ملاحظتك للباريستا: <strong>"{lastOrder.customerNote}"</strong>
-              </div>
-            )}
-
-            {/* In-Cafe Actions: Call Waiter / Request Bill */}
-            <div
-              style={{
-                display: "flex",
-                gap: "10px",
-                justifyContent: "center",
-                flexWrap: "wrap",
-                margin: "18px 0",
-              }}
-            >
+            {/* Actions for in-cafe customer */}
+            <div style={{ display: "flex", gap: "10px", justifyContent: "center", margin: "18px 0" }}>
               <button
                 type="button"
                 className="btn-call-waiter"
                 onClick={handleCallWaiter}
               >
-                🔔 استدعاء السرباي للطاولة ({lastOrder.tableNumber || "الطاولة"})
+                🔔 استدعاء السرباي للطاولة ({lastOrder.tableNumber})
               </button>
               <button
                 type="button"
                 className="btn-export"
                 onClick={() => alert(`تم إشعار الكاشير! السرباي سيحضر فاتورة ${lastOrder.totalTtc} د.م وجهاز TPE إلى طاولتك.`)}
               >
-                🧾 طلب الحساب عند الطاولة ({lastOrder.totalTtc} د.م)
+                🧾 طلب الحساب عند الطاولة
               </button>
             </div>
 
@@ -604,99 +433,23 @@ export default function CustomerView({
                   textAlign: "center",
                   fontWeight: 800,
                   fontSize: "13px",
-                  marginBottom: "16px",
+                  marginBottom: "14px",
                 }}
               >
                 {waiterCalledMsg}
               </div>
             )}
 
-            {/* Order Items Table */}
-            <table className="q-table" style={{ margin: "14px 0" }}>
-              <thead>
-                <tr>
-                  <th>العنصر</th>
-                  <th>الكمية</th>
-                  <th>السعر الفردي</th>
-                  <th>المجموع</th>
-                </tr>
-              </thead>
-              <tbody>
-                {lastOrder.items.map((it, idx) => (
-                  <tr key={idx}>
-                    <td>{it.name}</td>
-                    <td>{it.quantity}</td>
-                    <td>{it.price} د.م</td>
-                    <td>{it.price * it.quantity} د.م</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-            <div style={{ background: "#fdf8f4", padding: "14px", borderRadius: "10px", fontSize: "13px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
-                <span>الصافي الخاضع للضريبة (HT):</span>
-                <b>{lastOrder.subtotalHt.toFixed(2)} د.م</b>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
-                <span>الضريبة على القيمة المضافة (TVA 10%):</span>
-                <b>{lastOrder.vatMad.toFixed(2)} د.م</b>
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  fontSize: "16px",
-                  fontWeight: 900,
-                  color: "var(--primary-espresso)",
-                  borderTop: "1px dashed #d9cbbe",
-                  paddingTop: "6px",
-                  marginTop: "6px",
-                }}
-              >
-                <span>المجموع المؤدى (TTC):</span>
-                <b>{lastOrder.totalTtc} د.م</b>
-              </div>
-            </div>
-
-            <div style={{ textAlign: "center", marginTop: "18px" }}>
+            <div style={{ textAlign: "center", marginTop: "14px" }}>
               <button
                 className="btn-export"
                 onClick={() => alert(`تم تحميل فاتورة الهاتف الرسمية FAC-${new Date().getFullYear()}-${lastOrder.invoiceNumber}.pdf بنجاح!`)}
               >
-                📥 حفظ الفاتورة الإلكترونية على هاتفك (PDF)
+                📥 تحميل الفاتورة (PDF)
               </button>
             </div>
           </div>
         </div>
-      )}
-    </>
-  );
-
-  return (
-    <div className="customer-view">
-      {isPhoneFrame ? (
-        <div>
-          <div style={{ textAlign: "center", marginBottom: "16px" }}>
-            <span style={{ fontSize: "13px", fontWeight: 800, color: "var(--text-muted)" }}>
-              📱 أنت تشاهد الآن شاشة الهاتف الذكي للزبون الجالس في المقهى
-            </span>
-            <button
-              type="button"
-              onClick={() => setIsPhoneFrame(false)}
-              className="cat-pill"
-              style={{ marginRight: "10px" }}
-            >
-              ✕ إغلاق وضع الهاتف
-            </button>
-          </div>
-          <div className="phone-frame-mockup">
-            <div className="phone-notch"></div>
-            <div className="phone-screen">{renderMainContent()}</div>
-          </div>
-        </div>
-      ) : (
-        renderMainContent()
       )}
     </div>
   );
